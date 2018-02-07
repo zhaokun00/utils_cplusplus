@@ -1,0 +1,96 @@
+#include "ThreadPosix.h"
+#include <stdio.h>
+#include <unistd.h>
+
+static EventPosix * ep = NULL;
+
+#if 0
+bool func(ThreadObj obj) {
+
+	char *p = (char *)obj;
+
+	p[0] = '5'; //修改参数,源码中又将该参数输入进去
+
+	sleep(1);
+
+	return true;
+}
+
+#endif
+
+bool func1(ThreadObj obj) {
+
+	sleep(5);
+
+	printf("fun1\n");
+	ep->Set();
+
+	return true;
+}
+
+bool func2(ThreadObj obj) {
+
+	int ret = 0;
+	printf("ret = %d\n",ret);
+	ret = ep->Wait(1000);
+
+	return true;
+}
+
+int main() {
+
+//验证创建线程的示例
+#if 0
+
+	int i = 0;
+	
+	char buf[10] = "123";
+	
+	ThreadPosix * tp = ThreadPosix::Create(func, buf, kRealtimePriority, "testThread"); //创建线程
+
+	if(NULL == tp) {
+		return -1;
+	}
+
+	tp->Start(); //启动线程
+
+	while(true) {
+
+		i = i + 1;
+
+		if(i > 5) {
+			tp->Stop(); //停止线程
+
+			sleep(5);
+			break;
+		}
+
+		sleep(1);
+	}
+
+	printf("buf = %s\n",buf);
+#endif
+
+//验证两个线程同步的示例
+
+	ep = EventPosix::Create(); //创建
+
+	if(NULL == ep) {
+		printf("create EventPosix failed\n");
+	}
+
+	ThreadPosix * tp1 = ThreadPosix::Create(func1, NULL, kRealtimePriority, "testThread-1"); //创建线程
+	ThreadPosix * tp2 = ThreadPosix::Create(func2, NULL, kRealtimePriority, "testThread-2"); //创建线程
+
+	tp1->Start();
+	tp2->Start();
+	
+	while(1) {
+		sleep(1);
+	}
+	delete ep;
+	ep = NULL;
+	
+	return 0;
+	
+}

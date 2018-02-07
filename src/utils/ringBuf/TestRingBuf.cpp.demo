@@ -1,0 +1,92 @@
+#include "RingBuf.h"
+
+#define PER_BLOCK_SIZE 100 //定义每一个块的大小为100字节
+#define BLOCK_NUM	   100 //定义块的个数
+
+int main() {
+
+#if 0
+	
+	int ret = 0;
+	RingBufferT ringBuf; //定义普通变量的形式
+	char buf[100];
+	char readBuf[100];
+	
+	for(int i = 0;i < 100;i++) {
+		buf[i] = i;
+	}
+	ret = initRingBuf(&ringBuf,BLOCK_NUM * PER_BLOCK_SIZE, PER_BLOCK_SIZE); //初始化环形缓冲区
+
+	if(0 != ret) {
+		printf("initRingBuf failed\n");
+	}
+
+	ret = writeRingBuf(&ringBuf,buf,100);
+	if(0 != ret) {
+		printf("writeRingBuf failed\n");
+	}
+
+	ret = readRingBuf(&ringBuf,readBuf,100);
+	if(0 != ret) {
+		printf("readRingBuf failed\n");
+	}
+
+	for(int i = 0;i < 100;i++) {
+		readBuf[i] = i;
+
+		printf("readBuf[%d] = %d\n",i,readBuf[i]);
+	}
+	releaseRingBuf(&ringBuf); //释放环形缓冲区
+#endif
+
+	int ret = 0;
+	RingBufferT * ringBuf = NULL; //定义指针的形式
+	char buf[100];
+	char readBuf[100];
+	
+	for(int i = 0;i < 100;i++) {
+		buf[i] = i;
+	}
+
+	ringBuf = (RingBufferT *)malloc(sizeof(RingBufferT));
+
+	if(NULL == ringBuf) {
+		return -1;
+	}
+	
+	ret = initRingBuf(ringBuf,BLOCK_NUM * PER_BLOCK_SIZE, PER_BLOCK_SIZE); //初始化环形缓冲区
+
+	if(0 != ret) {
+		printf("initRingBuf failed\n");
+	}
+
+	ret = writeRingBuf(ringBuf,buf,100);
+	if(0 != ret) {
+		printf("writeRingBuf failed\n");
+	}
+
+	int location = getWritePosRingBuf(ringBuf);
+
+	printf("write location = %d\n",location);
+	
+	ret = readRingBuf(ringBuf,readBuf,50);
+	if(0 != ret) {
+		printf("readRingBuf failed\n");
+	}
+
+	location = getReadPosRingBuf(ringBuf);
+
+	printf("read location = %d\n",location);
+
+	for(int i = 0;i < 100;i++) {
+		readBuf[i] = i;
+
+//		printf("readBuf[%d] = %d\n",i,readBuf[i]);
+	}
+	releaseRingBuf(ringBuf); //释放环形缓冲区
+
+	free(ringBuf);
+	ringBuf = NULL;
+	
+	return 0;
+}

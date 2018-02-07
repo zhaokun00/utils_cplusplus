@@ -1,0 +1,11 @@
+#include "Log.h"
+
+int main() {
+
+	int ret = 10000;
+
+	log(1,"ret = %d",ret);
+
+	
+	return 0;
+}

@@ -1,0 +1,20 @@
+
+#include "Time.h"
+
+int main() {
+
+	int ret = 0;
+	char buf[TIME_BUF_SIZE];
+	
+	ret = getLocalTimeToSec(buf,TIME_BUF_SIZE);
+
+	printf("ret = %d,time = %s\n",ret,buf);
+
+	
+	ret = getLocalTimeToMsec(buf,TIME_BUF_SIZE);
+	
+	printf("ret = %d,time = %s\n",ret,buf);
+	
+	return 0;
+}
+

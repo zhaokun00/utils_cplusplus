@@ -1,0 +1,20 @@
+#include "CriticalSectionPosix.h"
+
+int main() {
+
+	CriticalSectionPosix * cp = CriticalSectionPosix::Create(); //创建一个锁
+
+	if(NULL == cp) {
+		return -1;
+	}
+	
+	//模拟实际运行中的代码段,当代码段结束后,程序会自动释放锁,不用去主动释放锁
+	{
+		CriticalSectionScoped cs(cp); //加锁
+	}
+
+	delete cp; //销毁锁
+	cp = NULL;
+	
+	return 0;
+}
