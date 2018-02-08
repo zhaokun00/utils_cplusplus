@@ -13,7 +13,7 @@
 #   $ make clean     clean the objectives and dependencies.
 ###############################################################################
 
-COMPILE = true
+COMPILE = false
 ifeq ($(COMPILE),false)
 $(error 'modify COMPILE to true')
 endif
