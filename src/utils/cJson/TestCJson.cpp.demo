@@ -1,0 +1,166 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include "cJSON.h" //前面必须先包含#include <stdio.h>头文件,否则编译时会报错
+
+//通信时都是通过字符串的形式,只是通过json的格式进行打包和解包
+//生成json串
+char * makeJson();
+//解析json串
+void parseJson(char *pData);
+
+int main() {
+	char *ptr = NULL;
+	
+	ptr = makeJson();
+
+	if(NULL == ptr) {
+		return -1;
+	}
+	
+//	printf("ptr = %s\n",ptr);
+//	printf("int = %d,long = %d,long long = %d\n",sizeof(int),sizeof(long),sizeof(long long));
+	parseJson(ptr);
+	
+	free(ptr);
+	ptr = NULL;
+	
+	return 0;
+}
+
+char * makeJson() {
+
+	int ret = 0;
+	cJSON *pRoot = NULL;
+	char *ptrNoFormat = NULL;
+	
+	do {
+		//生成一个json对象
+		pRoot = cJSON_CreateObject();
+
+		if(NULL == pRoot) {
+			ret = -1;
+			break;
+		}
+
+		//添加字符串类型
+		cJSON_AddItemToObject(pRoot, "name" ,cJSON_CreateString("zhaokun")); //也可以这样调用:cJSON_AddStringToObject(pRoot, "name", "zhaokun");//可以看源码里面,该函数里面调用的是cJSON_CreateString函数
+		//添加数值类型
+		cJSON_AddItemToObject(pRoot,"age",cJSON_CreateNumber(4294967295));
+		//添加json对象
+		cJSON * item = NULL;
+		item = cJSON_CreateObject();
+		//添加bool类型
+		cJSON_AddItemToObject(item,"sex",cJSON_CreateBool(1));
+		
+		cJSON_AddItemToObject(pRoot, "item", item);
+
+		//添加数组类型
+		cJSON * array = NULL;
+		array = cJSON_CreateArray();
+
+		//向数组中添加整型
+		cJSON_AddItemToArray(array,cJSON_CreateNumber(20));
+		//向数组中添加NULL
+		cJSON_AddItemToArray(array,cJSON_CreateNull());
+
+		cJSON * obj = cJSON_CreateObject();
+
+		cJSON_AddItemToObject(obj,"obj",cJSON_CreateString("Obj"));
+		cJSON_AddItemToObject(obj,"empty",cJSON_CreateNull());
+		//向数组中添加对象
+		cJSON_AddItemToArray(array,obj);
+		cJSON_AddItemToObject(pRoot,"array",array);
+
+		//以有格式的形式打印json串
+		char *ptrFormat = cJSON_Print(pRoot);
+
+//		printf("ptrFormat = %s\n",ptrFormat);
+
+		//转成字符串后要手动自动释放
+		free(ptrFormat);
+		ptrFormat = NULL;
+
+		//以有无格式的形式打印json串
+		ptrNoFormat = cJSON_PrintUnformatted(pRoot);
+
+//		printf("ptrNoFormat = %s\n",ptrNoFormat);
+		
+		//删除json对象
+		cJSON_Delete(pRoot);
+		pRoot = NULL;
+		
+	} while(0);
+
+	return ptrNoFormat;
+	
+}
+
+void parseJson(char *pData) {
+
+	cJSON * root = NULL;
+	cJSON * obj = NULL;
+	
+	//将字符串转换成json串
+	root = cJSON_Parse(pData);
+
+	if(NULL == root) {
+		return;
+	}
+	
+	//通过key值从里面获取对象
+	obj = cJSON_GetObjectItem(root,"name");
+
+	//解析字符串
+	printf("key = %s\n",obj->string); //输出:name
+	printf("value = %s\n",obj->valuestring); //输出:zhaokun,与下面打印输出是不一样的
+	
+//	printf("obj = %s\n",cJSON_PrintUnformatted(obj)); //输出"zhaokun"
+
+	//解析数值类型
+	obj = cJSON_GetObjectItem(root,"age");
+	printf("key = %s\n",obj->string);
+	printf("value = %ld\n",(long)obj->valuedouble);
+//	printf("value = %ld\n",obj->valueint);
+
+	//解析对象,从对象中在进行解析
+	obj = cJSON_GetObjectItem(root,"item");
+	obj = cJSON_GetObjectItem(obj,"sex");
+
+	char *ptr = NULL;
+	ptr = obj->string;
+	
+	printf("key = %s\n",obj->string);
+	printf("value = %ld\n",(long)obj->valueint); //可以将double类型强制转换成long类型
+
+	obj = cJSON_GetObjectItem(root,"array");
+	cJSON * item = NULL;
+	
+	printf("size = %d\n",cJSON_GetArraySize(obj));
+	item = cJSON_GetArrayItem(obj,0);
+
+	printf("obj = %s\n",cJSON_PrintUnformatted(item));
+	
+	printf("key = %s\n",item->string); //会输出null
+	printf("value = %d\n",item->valueint);
+
+	item = cJSON_GetArrayItem(obj,1);
+	printf("key = %s\n",item->string); //会输出null
+	printf("value = %d\n",item->valueint);
+
+	item = cJSON_GetArrayItem(obj,2);
+
+	
+	cJSON *pObj = cJSON_GetObjectItem(item,"obj");
+	printf("key = %s\n",pObj->string); //会输出null
+	printf("value = %s\n",pObj->valuestring);
+
+	
+	cJSON_Delete(root); //需要将其释放
+	root = NULL;
+
+//	printf("ptr = %s\n",ptr); //在这输出为乱码的形式,由于前面已经将json对象释放掉了
+}
+
+
+
