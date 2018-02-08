@@ -1,0 +1,28 @@
+#ifndef IO_H____
+#define IO_H____
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+#include <unistd.h>
+
+	#define PATH_LEN 1024
+	
+	#define DIR_TYPE   4
+	#define FILE_TYPE  8
+	#define LINK_TYPE 10
+	
+	/*
+	 * Function: readFileList
+	 * Description: 读取某个路径下的所有文件的名字
+	 * Parameters:
+	 * pPath:文件的路径
+	 * Return: 0-success -1:failed
+	 */
+	int readFileList(char *pPath);
+
+#endif
+
+
+

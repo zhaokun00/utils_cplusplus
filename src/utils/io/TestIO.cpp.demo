@@ -1,0 +1,15 @@
+#include "IO.h"
+
+int main() {
+
+	char basePath[1024] = {0};
+	/*
+		char *getcwd(char *buf,size_t size);
+		getcwd()会将当前工作目录的绝对路径复制到参数buffer所指的内存空间中,参数size为buf的空间大小
+	*/
+    getcwd(basePath, sizeof(basePath) - 1);
+    printf("the current dir is : %s\n",basePath);
+
+    readFileList(basePath);
+	return 0;
+}
