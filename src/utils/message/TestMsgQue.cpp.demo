@@ -1,0 +1,55 @@
+#include "MsgQueue.h"
+#include "pthread.h"
+
+/*
+	所定义的消息中,第一个数据必须为long类型的数据,表示消息的类型
+*/
+struct Msg {
+
+	long dest;
+	int body;
+	int sex;
+	int name;
+};
+
+void * thread_function(void * arg) {
+
+	MsgQueue * msgQue = MsgQueue::getMsgQue();
+	struct Msg msg;
+	
+	while(1) {
+
+		msgQue->reveive(&msg, sizeof(msg) - sizeof(long), 1, MsgQueue::BLOCK);
+		printf("dest = %ld,body = %ld\n",msg.dest,msg.body);
+		sleep(1);
+	}
+
+	return 0;
+}
+
+
+int main() {
+
+	struct Msg msg;
+	struct msqid_ds ds;
+	msg.dest = 1;
+	msg.body = 0;
+	
+	MsgQueue::Create();
+	MsgQueue * msgQue = MsgQueue::getMsgQue();
+
+	pthread_t child_thread;
+
+//	pthread_create(&child_thread, NULL, thread_function, NULL);
+
+	while(1) {
+		msgctl(msgQue->getMsgId(),IPC_STAT,&ds);
+		msg.body++;
+		msgQue->send(&msg, sizeof(msg) - sizeof(long), MsgQueue::NOBLOCK);
+		//消息队列中的能容纳消息的个数、现在消息队列中的消息个数、消息所占用的空间大小
+		printf("msg_qbytes = %ld,msg_qnum = %ld,__msg_cbytes=%d\n",ds.msg_qbytes,ds.msg_qnum,ds.__msg_cbytes);
+		sleep(2);
+		
+	}
+	return 0;
+}
