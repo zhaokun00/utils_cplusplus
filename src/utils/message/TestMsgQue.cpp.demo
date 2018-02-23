@@ -8,19 +8,31 @@ struct Msg {
 
 	long dest;
 	int body;
-	int sex;
-	int name;
+//	int sex;
+//	int name;
+	char *pBuf; //可以加个成员定义成指针类型,可以定义成void *类型,然后再进行强制转换
+};
+
+class Human {
+
+	public:
+		long dest;
+		void fun() {
+			printf("fun\n");
+		}
 };
 
 void * thread_function(void * arg) {
 
 	MsgQueue * msgQue = MsgQueue::getMsgQue();
 	struct Msg msg;
+	int len= 256;
 	
+	sleep(1);
 	while(1) {
-
+		printf("receive start\n");
 		msgQue->reveive(&msg, sizeof(msg) - sizeof(long), 1, MsgQueue::BLOCK);
-		printf("dest = %ld,body = %ld\n",msg.dest,msg.body);
+		printf("dest = %ld,body = %ld,pBuf = %x,addr = %p\n",msg.dest,msg.body,msg.pBuf,&msg.pBuf);
 		sleep(1);
 	}
 
@@ -30,6 +42,8 @@ void * thread_function(void * arg) {
 
 int main() {
 
+/*
+	//测试基本的发送消息
 	struct Msg msg;
 	struct msqid_ds ds;
 	msg.dest = 1;
@@ -51,5 +65,78 @@ int main() {
 		sleep(2);
 		
 	}
+*/
+
+/*
+	//测试发送消息时,发送消息接口会复制消息内容
+	struct Msg *msg = NULL;
+	MsgQueue::Create();
+	MsgQueue * msgQue = MsgQueue::getMsgQue();
+	pthread_t child_thread;
+
+	msg = (struct Msg *)malloc(sizeof(struct Msg));
+
+	msg->dest = 1;
+	msg->body = 2;
+
+	pthread_create(&child_thread, NULL, thread_function, NULL);
+	//	
+	msgQue->send(msg, sizeof(struct Msg) - sizeof(long), MsgQueue::NOBLOCK);
+	printf("send msg finish\n");
+	
+	free(msg);
+	msg = NULL;
+
+	sleep(5);
+*/
+
+//	printf("Human size = %d,long = %d\n",sizeof(Human),sizeof(long)); //类所占用的空间为成员变量所占用的空间,成员函数不占用内存空间,打印信息为Human size = 8,long = 8
+
+/*
+	//测试数组与指针占用的内存空间大小
+	char buf[256] = {0};
+	char *p = NULL;
+
+	printf("p-0 = %d\n",sizeof(p)); //占用8字节内存空间
+
+	p = buf;
+
+	printf("p-1 = %d\n",sizeof(p)); //占用8字节内存空间
+
+	printf("buf = %d\n",sizeof(buf)); //占用256字节内存空间
+
+	printf("%d\n",sizeof(char *)); //占用8字节的内存空间,sizeof(*)这种写法是错误的
+*/
+	
+	struct Msg msg;
+	int len = 256;
+	msg.dest = 1;
+	msg.body = 0;
+	msg.pBuf = (char *)malloc(len); //malloc的返回值是void *类型,因此要进行强制转换
+
+	printf("msg = %p\n",&msg);
+	printf("pBuf = %p..\n",&msg.pBuf);
+	printf("pBuf = %p\n",msg.pBuf);
+	
+	strncpy(msg.pBuf,"zhaokun",10);
+	
+	MsgQueue::Create();
+	MsgQueue * msgQue = MsgQueue::getMsgQue();
+
+	pthread_t child_thread;
+
+	pthread_create(&child_thread, NULL, thread_function, NULL);
+
+//	while(1) {
+		msg.body++;
+		msgQue->send(&msg, sizeof(msg) - sizeof(long), MsgQueue::NOBLOCK);
+
+//		free(msg.pBuf);
+//		msg.pBuf = NULL;
+		printf("free finsh\n");
+		sleep(5);
+
+//	}
+	
 	return 0;
 }

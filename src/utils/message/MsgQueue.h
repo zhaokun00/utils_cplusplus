@@ -21,7 +21,9 @@ class MsgQueue       {
 		static int Create();
 		static MsgQueue * getMsgQue();
 		static int Destory();
-	    int send(const void *msg, unsigned int nBytes, int flag);  
+		//传入的为消息的指针,将来在消息队列中会复制一个消息,即使源消息释放掉,消息队列中的消息也不会消失,除非取走
+	    int send(const void *msg, unsigned int nBytes, int flag);
+		//传入的为消息队列中的消息指针,会将消息队列中的消息,复制一个一份给目的消息,将消息从消息队列中取走后,消息队列中的消息将会消失
 	    int reveive(void *msg, unsigned int nbytes, long type, int flag);
 		int getMsgId();
 		static const int BLOCK = 0;
