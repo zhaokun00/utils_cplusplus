@@ -1,0 +1,430 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <pthread.h>
+
+/*
+	主线程中sleep函数会被中断信号打断,例如注册了SIGUSR1信号,当发送kill -USR1 进程号时,会中断主线程中的sleep函数使其继续往下执行
+*/
+
+void sigUsr1Handler(int signal) {
+
+	if(SIGUSR1 == signal) {
+		printf("sigUsr1Handler\n");
+	}
+}
+
+//测试SIGUSR1信号
+void testSignalUsr1() {
+
+	/*
+	函数原型:
+		typedef void (*sighandler_t)(int);
+		sighandler_t signal(int signum, sighandler_t handler);
+
+	作用:设置信号处理方式,signal会根据参数signum指定的信号来设置该信号的处理函数,当指定的信号倒到时就会
+		 跳转到参数handler指定的函数执行。即注册signum信号,当接收到该signum信号时,会调用handler函数
+
+		 handler:
+		 	SIG_IGN:忽略参数signum指定的信号
+		 	SIG_DFL:将参数signum指定的信号重设为核心预设的信号处理方式,即采用系统默认方式处理信号
+		 	定义信号函数处理指针
+		 	
+	函数返回值:
+		成功:返回先前的信号处理函数指针
+		出错:SIG_ERR(-1)
+
+	信号:
+		1) SIGINT
+		程序终止(interrupt)信号, 在用户键入INTR字符(通常是Ctrl-C)时发出，用于通知前台进程组终止进程。
+
+
+		2) SIGQUIT
+		和SIGINT类似, 但由QUIT字符(通常是Ctrl-\)来控制. 进程在因收到SIGQUIT退出时会产生core文件, 在这个意义上类似于一个程序错误信号。
+
+
+		3) SIGTERM
+		程序结束(terminate)信号, 与SIGKILL不同的是该信号可以被阻塞和处理。通常用来要求程序自己正常退出，shell命令kill缺省产生这个信号。如果进程终止不了，我们才会尝试SIGKILL。
+
+
+		4) SIGSTOP
+		停止(stopped)进程的执行. 注意它和terminate以及interrupt的区别:该进程还未结束, 只是暂停执行. 本信号不能被阻塞, 处理或忽略.
+	*/
+	signal(SIGUSR1,sigUsr1Handler); //注册SIGUSR1信号
+
+	while(1) {
+		printf("test main\n");
+		sleep(10); //当发送SIGUSR1信号时,会打断sleep函数
+//		pause();
+	}
+}
+
+void sigactionHandle(int signal) {
+
+	for(int i = 0;i < 10;i++) {
+		printf("sigactionHandle\n");
+		sleep(1);
+	}
+	
+}
+
+/*
+	其中的一个示例:
+	#include <stdio.h>  
+	#include <signal.h>  
+	  
+	void WrkProcess(int nsig)  
+	{  
+	        printf("WrkProcess .I get signal.%d threadid:%d/n",nsig,pthread_self());  
+	  
+	  
+	        int i=0;  
+	        while(i<5){  
+	                printf("%d/n",i);  
+	                sleep(1);  
+	                i++;  
+	        }  
+	}  
+	  
+	int main()  
+	{  
+	        struct sigaction act,oldact;  
+	        act.sa_handler  = WrkProcess;  
+	//      sigaddset(&act.sa_mask,SIGQUIT);  
+	//      sigaddset(&act.sa_mask,SIGTERM)  
+	        act.sa_flags = SA_NODEFER | SA_RESETHAND;    
+	//        act.sa_flags = 0;  
+	  
+	        sigaction(SIGINT,&act,&oldact);  
+	  
+	        printf("main threadid:%d/n",pthread_self());  
+	  
+	        while(1)sleep(5);  
+	  
+	        return 0;  
+	}
+	1）执行改程序时，ctrl+c，第一次不会导致程序的结束。而是继续执行，当用户再次执行ctrl+c的时候，程序采用结束。
+
+	2）如果对程序稍微进行一下改动，则会出现另外一种情况。
+
+	改动为：act.sa_flags = SA_NODEFER；
+
+	经过这种改变之后，无论对ctrl+c操作多少次，程序都不会结束。
+
+	3）下面如果再对程序进行一次改动，则会出现第三种情况。
+
+	For example:  act.sa_flags = 0;
+
+	在执行信号处理函数这段期间，多次操作ctrl+c，程序也不会调用信号处理函数，而是在本次信号处理函数完成之后，在执行一次信号处理函数（无论前面产生了多少次ctrl+c信号）。
+
+	如果在2）执行信号处理函数的过程中，再次给予ctrl+c信号的时候，会导致再次调用信号处理函数。
+
+	4）如果在程序中设置了sigaddset(&act.sa_mask,SIGQUIT);程序在执行信号处理函数的过程中，发送ctrl+/信号，程序也不会已经退出，而是在信号处理函数执行完毕之后才会执行SIGQUIT的信号处理函数，然后程序退出。如果不添加这项设置，则程序将会在接收到ctrl+/信号后马上执行退出，无论是否在ctrl+c的信号处理函数过程中。
+
+	原因如下：
+
+	1）情况下，第一次产生ctrl+c信号的时候，该信号被自己设定的信号处理函数进行了处理。在处理过程中，由于我们设定了SA_RESETHAND标志位，又将该信号的处理函数设置为默认的信号处理函数（系统默认的处理方式为IGN）,所以在第二次发送ctrl+d信号的时候，是由默认的信号处理函数处理的，导致程序结束；
+
+	2）情况下，我们去掉了SA_RESETHAND了标志位，导致程序中所有的ctrl+d信号均是由我们自己的信号处理函数来进行了处理，所以我们发送多少次ctrl+c信号程序都不会退出；
+
+	3）情况下，我们去掉了SA_NODEFER标志位。程序在执行信号处理函数过程中，ctrl+c信号将会被阻止，但是在执行信号处理函数期发送的ctrl+c信号将会被阻塞，知道信号处理函数执行完成，才有机会处理信号函数执行期间产生的ctrl+c,但是在信号函数执行产生的多次ctrl+c，最后只会产生ctrl+c。2）情况下，由于设置了SA_NODEF，ctrl+c信号将不会被阻塞。所以能够并行执行下次的信号处理函数。
+
+	4）情况下，我们是设置了在执行信号处理函数过程中，我们将屏蔽该信号，当屏蔽该信号的处理函数执行完毕后才会进行处理该信号。
+
+	附：
+
+	当我们按下ctrl+c的时候，操作为：向系统发送SIGINT信号，SIGINT信号的默认处理，退出程序。
+
+	当我们按下ctrl+/的时候，操作为：向系统发送SIGQUIT信号，该信号的默认处理为退出程序。
+*/
+void testSigaction() {
+
+	/*
+		struct sigaction
+		{
+
+		void (*sa_handler) (int);
+
+		void  (*sa_sigaction)(int, siginfo_t *, void *);
+
+		sigset_t sa_mask;
+
+		int sa_flags;
+
+		void (*sa_restorer) (void);
+
+		}
+
+		1.sa_handler：此参数和signal()的参数handler相同，此参数主要用来对信号旧的安装函数signal()处理形式的支持
+
+		2.sa_sigaction：新的信号安装机制，处理函数被调用的时候，不但可以得到信号编号，而且可以获悉被调用的原因以及产生问题的上下文的相关信息。
+
+		3.sa_mask：用来设置在处理该信号时暂时将sa_mask指定的信号搁置
+
+		4.sa_restorer： 此参数没有使用
+
+		5.a_flags：用来设置信号处理的其他相关操作，下列的数值可用。可用OR 运算（|）组合
+
+			A_NOCLDSTOP:如果参数signum为SIGCHLD，则当子进程暂停时并不会通知父进程
+
+			SA_ONESHOT/SA_RESETHAND:当调用新的信号处理函数前，将此信号处理方式改为系统预设的方式
+
+			SA_RESTART:被信号中断的系统调用会自行重启
+
+			SA_NOMASK/SA_NODEFER:在处理此信号未结束前不理会此信号的再次到来
+
+			SA_SIGINFO：信号处理函数是带有三个参数的sa_sigaction
+
+
+		创建信号集函数:
+		创建信号集函数有如下5个：
+
+		sigemptyset：初始化信号集合为空。
+
+		sigfillset：把所有信号加入到集合中，信号集中将包含Linux支持的64种信号。
+
+		sigaddset：将指定信号加入到信号集合中去。
+
+		sigdelset：将指定信号从信号集中删去。
+
+		sigismember：查询指定信号是否在信号集合之中。
+
+ 
+        创建信号集合函数原型
+
+
+		函数原型
+
+		int sigemptyset(sigset_t *set)
+
+		int sigfillset(sigset_t *set)
+
+		int sigaddset(sigset_t *set,int signum)
+
+		int sigdelset(sigset_t *set,int signum)
+
+		int sigismember(sigset_t *set,int signum)
+
+		函数传入值
+
+		set：信号集
+
+		signum：指定信号值
+
+		函数返回值
+
+		成功：0（sigismember函数例外，成功返回1，失败返回 0）
+
+		出错：-1，错误原因存于error中
+	*/
+	struct sigaction act;
+	
+    act.sa_handler  = sigactionHandle; //指定回调函数  
+//    sigaddset(&act.sa_mask,SIGQUIT); //用来设置在处理该信号时暂时将sa_mask指定的信号搁置,只是用于在处理信号时暂停
+    act.sa_flags = SA_NODEFER;    
+//        act.sa_flags = 0;  
+
+/*
+	函数原型:
+		int sigaction(int signum,const struct sigaction *act ,struct sigaction *oldact)
+
+	作用:
+		会依参数signum指定的信号编号来设置该信号的处理函数
+	参数:
+		signum:可以指定SIGKILL和SIGSTOP以外的所有信号
+		act:参照struct sigaction
+		oldact:如果参数oldact不是NULL指针，则原来的信号处理方式会由此结构sigaction返回
+
+	返回值:
+		成功:0
+		失败:-1
+		
+*/
+//        sigaction(SIGINT,&act,NULL);  //注册信号,功能要比signal函数强大的多
+
+		sigaction(SIGUSR1,&act,NULL);
+
+/*
+	sigprocmask（设置信号屏蔽位）
+
+
+	函数原型
+
+	int sigprocmask(int how,const sigset_t *set,sigset_t *oset)
+
+		函数传入值
+
+		how(决定函数的操作方式)
+
+		SIG_BLOCK：增加一个信号集合到当前进程的阻塞集合之中
+
+		SIG_UNBLOCK：从当前的阻塞集合之中删除一个信号集合
+
+		SIG_SETMASK：将当前的信号集合设置为信号阻塞集合
+
+		set：指定信号集
+
+		oset：信号屏蔽字
+
+		函数返回值
+
+		成功：0
+
+		出错：-1，错误原因存于error中
+
+*/
+
+/*
+	//屏蔽信号
+	sigset_t set;
+	sigaddset(&set,SIGINT);
+	sigprocmask(SIG_BLOCK,&set,NULL);
+*/
+		while(1) {
+			printf("testSigaction\n");
+			sleep(100);
+		}
+        
+}
+
+void sigAlarmHandle(int signal) {
+
+	printf("sigAlarmHandle\n");
+	alarm(1);
+}
+
+void testAlarm() {
+
+	signal(SIGALRM, sigAlarmHandle); //注册时钟信号
+
+	/*
+		[1] 引用头文件：#include <unistd.h>;  
+  
+		[2] 函数标准式：unsigned int alarm(unsigned int seconds);  
+		  
+		[3] 功能与作用：alarm()函数的主要功能是设置信号传送闹钟，即用来设置信号SIGALRM在经过参数seconds秒数后发送给目前的进程。如果未设置信号SIGALARM的处理函数，那么alarm()默认处理终止进程。  
+		  
+		[4] 函数返回值：如果在seconds秒内再次调用了alarm函数设置了新的闹钟，则后面定时器的设置将覆盖前面的设置，即之前设置的秒数被新的闹钟时间取代；当参数seconds为0时，之前设置的定时器闹钟将被取消，并将剩下的时间返回。
+	*/
+	alarm(1); //设置时间,在1s之后会调用回调函数
+	
+	while(1) {
+		printf("testAlarm\n");
+		sleep(10); //会被alarm信号打断
+	}
+	
+}
+
+void sigSetAlarmHandle(int signal) {
+
+	printf("sigSetAlarmHandle\n");
+	alarm(1);
+}
+
+void testSetAlarm() {
+
+	/*
+	int setitimer(int which, const struct itimerval *value,struct itimerval *ovalue);
+	　　这个函数使用起来稍微有点说法，首先是第一个参数which的值，这个参数设置timer的计时策略，which有三种状态分别是：
+	　　ITIMER_REAL：使用系统时间来计数，时间为0时发出SIGALRM信号，这种定时能够得到一个精准的定时，当然这个定时是相对的，因为到了微秒级别我们的处理器本身就不够精确。
+	　　ITIMER_VIRTUAL：使用进程时间也就是进程分配到的时间片的时间来计数，时间为0是发出SIGVTALRM信号，这种定时显然不够准确，因为系统给进程分配时间片不由我们控制。
+	　　ITIMER_PROF：上面两种情况都能够触发
+　　第二个参数参数value涉及到两个结构体：
+	　　struct itimerval {
+	　　struct timeval it_interval;
+	　　struct timeval it_value;
+	　　};
+	　　struct timeval {
+	　　long tv_sec;
+	　　long tv_usec;
+	　　};
+　　在结构体itimerval中it_value是定时器当前的值，it_interval是当it_value的为0后重新填充的值。而timeval结构体中的两个变量就简单了一个是秒一个是微秒
+
+*/
+	struct itimerval timerval;
+	
+	timerval.it_interval.tv_sec = 1;
+	timerval.it_interval.tv_usec = 0;
+	timerval.it_value.tv_sec = 1;
+	timerval.it_value.tv_usec = 0;
+
+	signal(SIGALRM, sigSetAlarmHandle); //注册信号
+	
+	setitimer(ITIMER_REAL, &timerval, NULL); //设置时间
+
+	while(1) {
+		printf("testSetAlarm\n");
+		sleep(10); //会被alarm信号打断
+	}
+}
+
+void sigPhtreadAlarmHandle(int signal) {
+
+	printf("sigPhtreadAlarmHandle\n");
+	alarm(1);
+}
+
+void *pthreadAlarmFunc1(void * ptr) {
+
+	signal(SIGALRM, sigPhtreadAlarmHandle);
+	alarm(1); //设置1s后报警
+
+	while(1) {
+		printf("pthreadAlarmFunc1\n");
+		sleep(5); //当主线程中没有屏蔽alarm信号时,alarm信号不会打断子线程中的sleep函数,只会中断主线程中的sleep函数,而当主线程屏蔽alarm信号时,则会影响
+//		pause(); //pause函数使调用进程或者线程进入睡眠状态,直到接收到信号
+	}
+
+	return NULL;
+}
+
+void *pthreadAlarmFunc2(void * ptr) {
+
+	while(1) {
+		printf("pthreadAlarmFunc2\n");
+		sleep(5); //alarm信号不会打断子线程中的sleep函数,只会中断主线程中的sleep函数
+	}
+
+	return NULL;
+}
+
+void testPthreadAlarm() {
+
+	pthread_t tid1;
+	pthread_t tid2;
+	
+//	signal(SIGALRM, sigPhtreadAlarmHandle); //在主进程中注册alarm信号,当alarm信号产生时会中断主线程中的sleep函数
+
+	pthread_create(&tid1, NULL, pthreadAlarmFunc1, NULL); //创建线程
+	pthread_create(&tid2, NULL, pthreadAlarmFunc2, NULL); //创建线程
+	
+	sigset_t sigset;
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGALRM);
+
+//	alarm(1);
+	pthread_sigmask(SIG_SETMASK,&sigset,NULL);
+
+	while(1) {
+
+		printf("testPthreadAlarm\n"); //子线程中的alarm信号会打断主线程中的sleep函数
+		sleep(10);
+	}
+}
+
+int main() {
+
+//	testSignalUsr1();
+//	testSigaction();
+//	testSetAlarm();
+
+	/*
+		方式1:在主线程中注册设置alarm信号,不会影响子线程
+		方式2:在主线程中屏蔽alarm信号,在子线程中注册设置alarm信号
+
+		在linux应用程序中也存在定时器的概念,同样在linux驱动程序开发中也存在定时器的概念
+	*/
+	testPthreadAlarm();
+	return 0;
+}
