@@ -1,67 +1,144 @@
 #include "CLibCurl.h"
 
 //libcurl在多线程环境下的使用
-#define USE_OPENSSL 
+//#define USE_OPENSSL 
        
-#include <stdio.h> 
-#include <pthread.h> 
-#include <curl/curl.h> 
-       
-static pthread_mutex_t *lockarray; 
-       
-#ifdef USE_OPENSSL 
-#include <openssl/crypto.h> 
+class Human {
 
-static void lock_callback(int mode, int type, const char *file, int line) {
+	public:
+		void read(const char *pData,size_t nSize) {} //普通的成员不能作为回调函数传入进去,有以下两种方式可以进行解决
+		friend void response(const char *pData,size_t nSize); //第一种方式,外部声明一个函数,把该函数声明为友元函数(友元函数可以访问类中的私有数据)
+		static void callBack(const char *pData,size_t nSize) { //第二种方式,将成员函数定义为静态函数
+			printf("%s\n",pData);
+		}
+};
 
-	(void)file; 
- 	(void)line; 
-  	if(mode & CRYPTO_LOCK) { 
-    	pthread_mutex_lock(&(lockarray[type])); 
-  	} 
-  	else { 
-    	pthread_mutex_unlock(&(lockarray[type])); 
-  	} 
-} 
-       
-static unsigned long thread_id(void) {
+//回调函数传递一个普通的函数
+void response(const char *pData,size_t nSize) {
 
-	  unsigned long ret; 
-	   
-	  ret=(unsigned long)pthread_self(); 
-	  return(ret); 
-} 
-       
-static void init_locks(void) {
+	printf("%s\n",pData);
+}
 
-  int i; 
-   
-  lockarray=(pthread_mutex_t *)OPENSSL_malloc(CRYPTO_num_locks() *  sizeof(pthread_mutex_t));
-  
-  for (i=0; i<CRYPTO_num_locks(); i++) { 
-    pthread_mutex_init(&(lockarray[i]),NULL); 
-  } 
-   
-  CRYPTO_set_id_callback(thread_id); 
-  CRYPTO_set_locking_callback(lock_callback); 
-} 
-       
-static void kill_locks(void) {
+void getResponse(const char *pData,size_t nSize) {
 
-  int i; 
-   
-  CRYPTO_set_locking_callback(NULL); 
-  for (i=0; i<CRYPTO_num_locks(); i++) 
-    pthread_mutex_destroy(&(lockarray[i])); 
-   
-  OPENSSL_free(lockarray); 
-} 
-#endif 
-       
-int main() {
+	printf("getResponse\n");
+//	printf("%s\n",pData);
+}
 
-	init_locks();
-	//创建线程执行
-	kill_locks();
+void postResponse(const char *pData,size_t nSize) {
+
+	printf("postResponse\n");
+//	printf("%s\n",pData);
+}
+
+
+void getRequest() {
+
+	CLibcurl curl;
+
+//	const char * url = "https://www.391k.com/api/xapi.ashx/info.json?key=bd_hyrzjjfb4modhj&size=10&page=1"; //在服务器上运行时可以支持https协议
+
+	const char * url = "http://api.m.mtime.cn/PageSubArea/TrailerList.api"; //在服务器上运行可以支持http协议
+
+//	curl.setPort(80); //默认为80端口
+//	curl.get(url, response);
+	curl.get(url, getResponse); //将url和回调函数函数传入进去
+}
+
+
+void postRequest() {
+
+	CLibcurl curl;
+	Human human;
+	
+	const char * url = "http://api.m.mtime.cn/PageSubArea/TrailerList.api";
+
+//	curl.post(url, "",response); //将url和数据和回调函数传递进去
+	curl.post(url, "",postResponse); 
+//	curl.post(url, "",human.callBack);
+
+}
+
+void * child1Fun(void * p) {
+
+	while(1) {
+		getRequest();
+		sleep(1);
+	}
+	
 	return 0;
 }
+
+void * child2Fun(void * p) {
+
+	while(1) {
+		postRequest();
+		sleep(1);
+	}
+	
+	return 0;
+}
+
+void mutilPthread() {
+
+	pthread_t child1;
+	pthread_t child2;
+	
+	pthread_create(&child1, NULL, child1Fun, NULL);
+	pthread_create(&child2, NULL, child2Fun, NULL);
+
+}
+
+void downLoadCallBack(void *pParam, long long total, long long now) {
+
+	printf("process = %lld%%\n",now * 100 / total);
+}
+
+void downLoad() {
+
+	CLibcurl curl;
+
+//	const char * url = "http://images.csdn.net/20150817/1.jpg";
+	const char * url = "http://vfx.mtime.cn/Video/2016/07/24/mp4/160724055620533327_480.mp4";
+
+	const char *pFile = "/data/10.100.37.17/home/zhaok/test/utils_cplusplus/src/utils/cLibCurl/1.jpg";
+	curl.downloadToFile(url, pFile,NULL,downLoadCallBack);
+}
+
+void upLoadFile() {
+
+	CLibcurl curl;
+
+	const char * pFile = "/home/zhaokun/test/1.mp3";
+	const char *url = "http://10.100.24.228:8080/FileUpload/FileUploadServlet";
+
+	curl.upLoadFile(url, pFile);
+}
+
+int main() {
+
+	CLibcurl::initLocks();
+	//创建线程执行
+
+//	getRequest(); //测试get请求
+
+//	postRequest(); //测试post请求
+
+//	mutilPthread(); //测试多线程
+
+//	downLoad(); //测试下文件
+
+	upLoadFile(); //测试上传文件
+
+	printf("main...........................................................\n");
+
+	while(1) {
+
+		sleep(1);
+	}
+
+	CLibcurl::killLocks();
+	return 0;
+}
+
+
