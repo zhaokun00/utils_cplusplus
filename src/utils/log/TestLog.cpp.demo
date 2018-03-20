@@ -1,11 +1,23 @@
 #include "Log.h"
 
-int main() {
+int main(int argc,char* argv[]) {
 
-	int ret = 10000;
+	LogUtils * logUtils = LogUtils::getInstance();
 
-	log(1,"ret = %d",ret);
+	logUtils->init(argv[0]);
 
-	
+while(1) {
+	log(INFO)<<"INFO test";
+	log(WARNING)<<"WARNING test";
+}
+
+
+#if 0
+	int *p = NULL;
+
+	*p = 10;
+#endif 
+
+	logUtils->close();
 	return 0;
 }

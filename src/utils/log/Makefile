@@ -13,7 +13,9 @@
 #   $ make clean     clean the objectives and dependencies.
 ###############################################################################
 
-COMPILE = false
+#export LD_LIBRARY_PATH += /data/10.100.37.17/home/zhaok/test/utils_cplusplus/src/utils/log/lib
+
+COMPILE = true
 ifeq ($(COMPILE),false)
 $(error 'modify COMPILE to true')
 endif
@@ -36,11 +38,11 @@ FILE_INC = -I./
 
 #定义依赖的库文件路径
 #@该处需要修改@#
-FILE_LIB = -L./
+FILE_LIB = -L./ -L./lib
 
 #定义依赖的动态库
 #@该处需要修改@#
-LDFLAGS = -lpthread -lm -lrt
+LDFLAGS = -lpthread -lm -lrt -lglog
 
 #在Makefile中打印警告信息或者错误信息的方法
 #警告信息:$(warning xxxxx),$(warning     ${XXX}),示例:$(warning "zhaokun"),$(warning ${DIR_SRC} ${DIR_OBJ})
@@ -80,5 +82,5 @@ ${DIR_OBJ}/%.o:${DIR_SRC}/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf bin/* obj/* *.o main
+	rm -rf bin/* obj/* *.o main*
 	
