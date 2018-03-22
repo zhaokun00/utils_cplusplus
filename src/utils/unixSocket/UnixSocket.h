@@ -39,5 +39,41 @@
 	void ipcSetNoBlock(int fd);
 	void ipcSetBlock(int fd);
 
+#define BLOCK 	 0	//阻塞方式
+#define NO_BLOCK 1 	//非阻塞方式
+
+class UnixSocketServer {
+
+	public:
+		UnixSocketServer();
+		int openSocket(const char * pPathName,int listerNum);
+		int acceptSocket();
+		int writeSocket(void *buf, int len);
+		int readSocket(void *buf, int len);
+		int closeSocket();
+		int setSocketFdMethod(int method);
+		int getClientFd();
+
+	private:
+		int m_socketFd;
+		int m_clientFd;
+		
+};
+
+class UnixSocketClient {
+	
+	public:
+		UnixSocketClient();
+		int connectSocket(const char * pPathName);
+		int writeSocket(void *buf, int len);
+		int readSocket(void *buf, int len);
+		int closeSocket();
+		int setSocketFdMethod(int method);
+		int getClientFd();
+	private:
+		int m_clientFd;
+	
+};
+
 #endif
 

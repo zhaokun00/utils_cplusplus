@@ -3,8 +3,18 @@
 
 #define PATH "/data/10.100.37.17/home/zhaok/test/utils_cplusplus/src/utils/unixSocket/test"
 
+class Message {
+
+	public:
+		int 	mId;
+		char 	mName[10];
+		float 	mScore;
+		long 	mCount;
+};
 void * serverThreadProcess(void *obj) {
 
+//测试C封装的函数
+#if 0
 	int socketFd = 0;
 	int clientFd = 0;
 	
@@ -12,20 +22,104 @@ void * serverThreadProcess(void *obj) {
 	ipcListen(socketFd, 60);
 	clientFd = ipcAccept(socketFd);
 	printf("server clinetFd = %d\n",clientFd); //与客户端的client值不同
-	char buf = '1';
+	char writeBuf = '1';
+	char readBuf = 0;
 	
+//1-简单测试发送
+#if 0	
 	while(1) {
-		printf("write = %c\n",buf);
-//		ipcWrite(clientFd,&buf,1);
-		buf = buf + 1;
+		printf("write = %c\n",writeBuf);
+//		ipcWrite(clientFd,&writeBuf,1);
+		writeBuf = writeBuf + 1;
 		sleep(1);
 	}
 
+	
+#endif
+
+//2-测试server端和client端双向通信
+#if 0
+
+	while(1) {
+
+//		printf("server write = %c\n",writeBuf);
+		ipcWrite(clientFd,&writeBuf,1);
+		writeBuf = writeBuf + 1;
+//		ipcSetNoBlock(clientFd); //文件描述符默认状态下为阻塞状态
+		ipcRead(clientFd,&readBuf,1); //不能服务端即发送又接收,只能等待客户端发送数据,这块才能接收
+		printf("server read = %c\n",readBuf);
+		sleep(1);	
+	}
+	
+#endif 
+
+//3-测试关闭数据流
+#if 0
+	sleep(2);
+	printf("server start close fd\n");
+	ipcServerClose(socketFd,clientFd);
+	printf("server end close fd\n");
+	
+#endif
+
+//4-测试阻塞状态下,如果不读取数据,是否能够持续写数据,答案:即使是设置为非阻塞模式,一样可以往里面写数据不会阻塞住
+#if 0
+	while(1) {
+		
+		printf("write = %c\n",writeBuf);
+		ipcWrite(clientFd,&writeBuf,1);
+		writeBuf = writeBuf + 1;
+		sleep(1);
+	}
+#endif
+
+//5-测试发送类对象是否能够发送成功,答案:发送类对象是可以发送成功的
+#if 0
+	while(1) {
+		
+		Message msg;
+		msg.mId = 1;
+		strncpy(msg.mName,"zhaokun",sizeof(msg.mName));
+		msg.mScore = 10.2;
+		msg.mCount = 100;
+
+		ipcWrite(clientFd,&msg,sizeof(Message));
+
+		sleep(1);
+	}
+#endif
+
+	ipcServerClose(socketFd,clientFd);
+#endif
+
+//测试C++封装的函数
+	UnixSocketServer server;
+
+	server.openSocket(PATH,100);
+
+	server.acceptSocket();
+	
+	Message msg;
+	msg.mId = 1;
+	strncpy(msg.mName,"zhaokun",sizeof(msg.mName));
+	msg.mScore = 10.2;
+	msg.mCount = 100;
+
+	while(1) {
+		printf("server write data....\n");
+		server.writeSocket(&msg, sizeof(msg));
+		sleep(1);
+	}
+
+
+	server.closeSocket();
 	return NULL;
 }
 
 void * clientThreadProcess(void *clientThreadProcess) {
 
+//测试C封装的函数
+#if 0
 	int clientFd = 0;
 
 	usleep(1000);
@@ -33,17 +127,103 @@ void * clientThreadProcess(void *clientThreadProcess) {
 	clientFd = ipcConnect(PATH);
 
 	printf("client clinetFd = %d\n",clientFd);
-	char buf = 0;
+	char writeBuf = 'a';
+	char readBuf = 0;
 	int ret = 0;
 
 	sleep(1);
-	
+
+//1-简单测试收数据
+#if 0
 	while(1) {
 		ret = ipcRead(clientFd, &buf, 1);
 		printf("read = %c\n",buf);
 		sleep(1);
 	}
+#endif
 
+//2-测试server端和client端双向通信
+#if 0
+	while(1) {
+		ret = ipcRead(clientFd, &readBuf, 1); //读取客户端数据
+		printf("client read = %c\n",readBuf);
+
+		ipcWrite(clientFd,&writeBuf,1); //向客户端写数据
+
+		writeBuf = writeBuf + 1;
+		
+		sleep(1);
+	}
+#endif
+
+//3-测试关闭数据流
+/*
+	关于socket阻塞与非阻塞下read、write返回值
+	write函数:
+		<0:出错
+		=0:连接关闭
+		>0:发送数据的大小
+
+	特别:非阻塞模式下返回值<0并且(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)的情况下认为连接是正常的， 继续发送。
+
+	read函数:
+		<0:出错
+		=0:连接关闭
+		>0:发送数据的大小
+
+	特别:非阻塞模式下返回值<0并且(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)的情况下认为连接是正常的， 继续发送。
+
+	只是阻塞模式下read函数会阻塞着接收数据,非阻塞模式下如果没有数据会返回,不会阻塞着读,因此需要循环读取
+*/
+#if 0
+	while(1) {
+		printf("client begin read\n");
+		ret = ipcRead(clientFd, &readBuf, 1);
+		printf("read = %c,ret = %d,errno = %d\n",readBuf,ret,errno);
+		sleep(1);
+	}
+#endif
+
+//4-测试阻塞状态下,如果不读取数据,是否能够持续写数据,答案:即使是设置为非阻塞模式,一样可以往里面写数据不会阻塞住
+#if 0
+	while(1) {
+		printf("client begin read\n");
+		ret = ipcRead(clientFd, &readBuf, 1);
+		printf("read = %c,ret = %d,errno = %d\n",readBuf,ret,errno);
+		sleep(5);
+	}
+#endif
+
+//5-测试发送类对象是否能够发送成功
+#if 0
+	while(1) {
+		
+		Message msg;
+		ipcRead(clientFd,&msg,sizeof(Message));
+
+		printf("id = %d,mName = %s,mScore = %f,mCount = %ld\n",msg.mId,msg.mName,msg.mScore,msg.mCount);
+		sleep(1);
+	}
+#endif
+
+	ipcClientClose(clientFd);
+#endif
+
+//测试C++封装的函数
+
+	UnixSocketClient client;
+
+	client.connectSocket(PATH);
+	Message msg;
+	
+	while(1) {
+		client.readSocket(&msg, sizeof(msg));
+		printf("id = %d,mName = %s,mScore = %f,mCount = %ld\n",msg.mId,msg.mName,msg.mScore,msg.mCount);
+		sleep(1);
+	}
+
+	client.closeSocket();
+	
 	return NULL;
 }
 
