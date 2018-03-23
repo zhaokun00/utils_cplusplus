@@ -2,7 +2,7 @@
  **************************************************************************************
  * Filename   : EventPosix.h
  * Author 	  : zhaokun
- * Description: EventPosix.h 该程序解决的是挂起当前线程和唤醒当前线程的问题
+ * Description: EventPosix.h 该程序解决的是程序同步问题
  * Date		  ：2018-01-30
  * Others	  :
  **************************************************************************************
@@ -23,13 +23,16 @@
 #include <time.h>
 #include <semaphore.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <errno.h>
 
-#define USE_SEMAPHORE
+//#define USE_SEMAPHORE
 
 #define RTIP_CLOCK_TYPE_REALTIME
 
 #define RTIP_EVENT_INFINITE 0xffffffff
-#define RTIP_EVENT_10_SEC 10000
 
 enum State {
     kUp = 1,
@@ -48,7 +51,7 @@ class EventPosix {
 	    static EventPosix* Create();
 
 	    virtual ~EventPosix();
-
+		//maxTime:单位位ms
 	    EventTypePosix Wait(uint32_t maxTime);
 	    bool Set();
 	    bool Reset();

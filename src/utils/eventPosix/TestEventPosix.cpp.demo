@@ -1,0 +1,134 @@
+#include <EventPosix.h>
+
+EventPosix *g_event = NULL;
+
+void * serverThreadProcess(void *obj) {
+
+//测试1:简单测试信号量问题,等待信号量
+//查看进程中的线程id号:cd /proc/进程号/task,该目录下由各个线程的id号
+#if 0
+	while(1) {
+		printf("wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(10000);
+		printf("result = %d\n",result);
+		printf("wait end...\n");
+	}
+#endif
+
+//测试2:测试释放多少次信号量
+#if 0
+	sleep(5);
+	while(1) {
+		printf("receive wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(2000); //等待信号信号量
+		printf("receive result = %d\n",result);
+	}
+#endif
+
+//测试3:测试使用互斥锁和条件变量的情况
+#if 0
+	while(1) {
+		printf("receive wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(2000); //等待信号信号量
+		printf("receive result = %d\n",result);
+	}
+#endif
+
+//测试4:测试如果等不到信号释放,则一直等待
+#if 0
+	while(1) {
+		printf("receive wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(RTIP_EVENT_INFINITE); //等待信号信号量
+		printf("receive result = %d\n",result);
+	}
+#endif
+
+//测试5:pthread_cond_broadcast函数与pthread_cond_signal函数的区别
+#if 1
+	while(1) {
+		printf("serverThreadProcess wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(2000);
+		printf("serverThreadProcess result = %d\n",result);
+	}
+#endif
+
+	return NULL;
+}
+
+void * clientThreadProcess(void *obj) {
+
+//测试2:测试释放多少次信号量
+#if 0
+	while(1) {
+		printf("send set begin...\n");
+		g_event->Set(); //释放信号加1,此时信号量=1,如果使用互斥锁和条件变量的情况,只会触发一次
+		g_event->Set(); //释放信号加1,此时信号量=2
+		sleep(10);
+		printf("send set end...\n");
+	}
+#endif
+
+//测试3:测试使用互斥锁和条件变量的情况
+#if 0
+	while(1) {
+		printf("send set begin...\n");
+		g_event->Set();
+		sleep(10);
+		printf("send set end...\n");
+	}
+#endif
+
+//测试5:pthread_cond_broadcast函数与pthread_cond_signal函数的区别
+#if 1
+	sleep(1);
+	while(1) {
+		printf("send set begin...\n");
+		g_event->Set();
+		sleep(10);
+		printf("send set end...\n");
+	}
+#endif
+
+	return NULL;
+}
+
+void * serverThreadProcess0(void *obj) {
+
+//测试5:pthread_cond_broadcast函数与pthread_cond_signal函数的区别
+#if 1
+	while(1) {
+		printf("serverThreadProcess0 wait begin...\n");
+		//等待time时间后,还未收到信号后则报超时时间
+		EventTypePosix result = g_event->Wait(2000);
+		printf("serverThreadProcess0 result = %d\n",result);
+	}
+#endif
+
+	return NULL;
+}
+
+int main() {
+
+	int ret = 0;
+	pthread_t serverThead;
+	pthread_t clinetThead;
+	pthread_t serverThead0;
+	g_event = EventPosix::Create();
+	
+	pthread_create(&serverThead, NULL, serverThreadProcess, NULL);
+
+	pthread_create(&clinetThead, NULL, clientThreadProcess, NULL);
+	
+	pthread_create(&serverThead0, NULL, serverThreadProcess0, NULL);
+
+	while(1) {
+		sleep(1);
+	}
+	return ret;
+}
+
