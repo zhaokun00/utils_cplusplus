@@ -10,6 +10,9 @@ project(TestExample)
 
 #必须配置:指定C++交叉编译器
 SET(CMAKE_CXX_COMPILER "arm-linux-gnueabi-g++")
+
+#使用C++11标准
+add_compile_options(-std=c++11)
 #不一定需要设置
 #指定交叉编译环境安装目录...
 #SET(CMAKE_FIND_ROOT_PATH "...")
@@ -36,8 +39,8 @@ aux_source_directory(. root)
 #添加当前目录下的src目录下的源文件到变量src中
 aux_source_directory(./src src)
 
-#添加变量root、src到变量SRC_LIST
-set(SRC_LIST $(root) $(src))
+#添加变量root、src到变量SRC_LIST,变量使用{}括起来,而不能使用()括起来
+set(SRC_LIST ${root} ${src})
 
 add_executable(TestExample ${SRC_LIST})
 
