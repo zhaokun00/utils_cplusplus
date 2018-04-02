@@ -1,0 +1,151 @@
+#include <map>
+#include <string>
+#include <iostream>
+#include <stdio.h>
+#include "ListenerImp.h"
+#include "ListenerController.h"
+
+using namespace std;
+
+//测试1:测试类的成员函数不能作为回调函数传入,回调函数必须为类里面的静态函数,一种解决方案是将对象传入,然后再调用对象里面的成员函数
+#if 0
+typedef void (*T)();
+
+void hello(T t) {
+
+	t();
+}
+
+class Human {
+
+	public:
+		static void fun() {
+			printf("fun\n");
+		}
+
+		void fun1() {
+			printf("fun1\n");
+		}
+};
+		
+int main() {
+
+	Human human;
+
+	hello(human.fun);
+
+	return 0;
+}
+#endif
+
+//测试2:进一步证明map里面的对象为复制,当局部变量销毁时,map里面的对象一样存在
+#if 0
+class Human {
+
+	public:
+		int id;
+};
+
+//map中存储的为一个对象
+map<int,Human> map1;
+
+void fun() {
+	
+	Human human;
+	human.id = 10;
+
+	map1.insert(map<int,Human>::value_type(1,human)); 
+
+	//以下两个地址打印是相同的,与map中的打印地址是不同的
+	printf("human's address = %p\n",&human);
+	printf("id's address = %p\n",&human.id);
+
+}
+
+#endif
+
+#if 0
+class Human {
+
+	public:
+		int id;
+};
+
+//map中存储的为一个指针
+map<int,Human *> map1;
+
+void fun() {
+
+	Human * human = new Human();
+
+	human->id = 10;
+
+	//与map中存储的地址是相同的
+	printf("addrss = %p\n",human);
+	map1.insert(map<int,Human *>::value_type(1,human));
+
+	human->id = 20;
+}
+
+#endif
+
+int main() {
+
+//测试1:map里面的对象为复制
+#if 0
+	Human human;
+	human.id = 10;
+
+	map1.insert(map<int,Human>::value_type(1,human)); 
+
+	map<int,Human>::iterator index;
+
+	index = map1.find(1);
+
+	human.id = 20;
+	printf("id = %d\n",index->second.id); //输出id = 10，而非id = 20;
+#endif
+
+//测试2:进一步证明map里面的对象为复制,当局部变量销毁时,map里面的对象一样存在
+#if 0
+	fun();
+	map<int,Human>::iterator index;
+
+	index = map1.find(1);
+
+	printf("id = %d\n",index->second.id);
+	//以下两个打印地址是相同的
+	printf("address = %p\n",&index->second);
+	printf("id = %p\n",&index->second.id);
+#endif
+	
+//测试3:测试map中存储的数据不是对象,而是对象的地址
+#if 0
+	fun();
+	map<int,Human *>::iterator index;
+
+	index = map1.find(1);
+
+	printf("index = %p\n",index->second);
+
+	printf("id = %d\n",index->second->id); //打印值为20
+#endif
+
+#if 1
+
+	ListenerImp * imp = new ListenerImp();
+	ListenerController controller;
+
+	controller.addListener(imp);
+
+//	imp->perform();
+	AbstractListner * al = controller.getListener(0);
+
+	al->perform();
+	
+#endif
+
+	return 0;
+}
+
+
