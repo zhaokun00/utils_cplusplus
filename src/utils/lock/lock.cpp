@@ -2,6 +2,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
+#include <chrono>
 
 /*
 	互斥量是一种同步原语,是一种线程同步的手段,用来保护多线程同一时间访问的共享数据
@@ -136,17 +138,54 @@ void test3() {
 	3.某个线程满足条件执行完之后调用notify_one或notify_all唤醒一个或者所有等待线程
 */
 
-std::condition_variable_any 
+//定义条件变量
+std::condition_variable_any g_condition;
+//定义互斥锁
+std::mutex g_test4_lock;
+
+//等待信号,阻塞当前线程
 void test_wait() {
 
+	while(1) {
+		std::unique_lock<std::mutex> lock(g_test4_lock);
+		std::cout << "wait start..." << std::endl;
+		
+		g_condition.wait(lock); //wait函数会释放当前的lock锁
+		
+		std::cout << "wait end..." << std::endl;
+	}
 }
 
+//发送信号量
 void test_post() {
 
+	std::this_thread::sleep_for(std::chrono::seconds(5));
+	while(1) {
+
+		std::cout << "post start..." << std::endl;
+
+		g_condition.notify_all();
+
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::cout << "post end..." << std::endl;
+	}
 }
 
 void test4() {
 
+	std::thread t1(test_wait);
+	std::thread t2(test_wait);
+	std::thread t3(test_wait);
+
+	std::thread t(test_post);
+
+	t1.join();
+	t2.join();
+	t3.join();
+
+
+
+//	t.join();
 }
 int main() {
 
