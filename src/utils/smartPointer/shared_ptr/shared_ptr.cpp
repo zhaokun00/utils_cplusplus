@@ -275,6 +275,46 @@ void test10() {
 	cout << "use_count3:" << th.m_human.use_count() << endl; //打印count = 1,在函数结束时会释放掉在test10_1中创建的Human *指针
 }
 
+//测试智能指针的多态问题
+class Animal {
+
+	public:
+		Animal() {}
+		virtual ~Animal() {}
+		virtual void play() {
+			std::cout << "Animal play" << std::endl;
+		}
+};
+
+class Dog:public Animal {
+
+	public:
+		Dog() {}
+		virtual ~Dog() {}
+		virtual void play() {
+			std::cout << "Dog play" << std::endl;
+		}
+};
+
+void test11() {
+
+#if 0
+	Animal * al = new Animal();
+
+	Dog * dog = new Dog();
+
+	al->play();
+	dog->play();
+#endif
+
+	shared_ptr<Animal> al(new Dog());
+
+//	shared_ptr<Dog> dog = (shared_ptr<Dog>)al; //不能这样转换
+	
+	al->play();
+//	dog->play();
+	
+}
 int main() {
 
 //	test1();
@@ -286,7 +326,8 @@ int main() {
 //	test7();
 //	test8();
 //	test9();
-	test10();
+//	test10();
+	test11();
 	return 0;
 }
 
