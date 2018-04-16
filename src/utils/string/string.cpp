@@ -40,7 +40,12 @@ void test1() {
 	std::cout << s << std::endl;
 }
 
+void test2() {
 
+	std::string s = new std::string();
+
+	
+}
 int main() {
 
 	test1();
