@@ -11,6 +11,8 @@
 	#include <memory> 								//智能指针的头文件
 	#include <queue> 								//队列的头文件
 	#include <string>								//字符串的头文件
+	#include <algorithm>
+	#include <string>
 	enum EventType {
 
 		EVENT_TIME = 0,
@@ -27,21 +29,24 @@
 		};
 	}
 #endif
+#if 1
 
 	//定义事件,不同事件继承与该事件
 	class Event {
 		public:
-			Event(int id);
+			Event(EventType id);
 			~Event();
-		private:
-			int m_evntType; //用于区分事件类型
+			
+			EventType m_evntType; //用于区分事件类型
 	};
 
 	
 	class EventHandler {
 
 		public:
-			virtual int handlerEvent(Event * event) = 0;
+			EventHandler();
+			virtual ~EventHandler();
+			virtual void handlerEvent(Event * event);
 	};
 
 	class EventManager {
@@ -57,26 +62,52 @@
 			
 			static void release();
 			
-			void addEventHandler(EventType type,EventHandler * handler);
+			int addEventHandler(EventType type,EventHandler * handler);
 			
-			void removeEventHandler(EventType type,EventHandler * handler);
+			int removeEventHandler(EventType type,EventHandler * handler);
 
-			void clearEventHander(EventType type);
+			int clearEventHander(EventType type);
 
-			void dispatchEvent(Event * event);
+			void clear();
+			
+			int dispatchEvent(Event * event);
 			
 		private:
-			
+
+			static const int m_error = -1;
+			static const int m_noError = 0;
 			static EventManager * m_eventManager;
 			HandlerMap m_handlerMap;
 			
 			EventManager();
-			EventManager(const EventManager&);
+			EventManager(const EventManager &);
 			~EventManager();
-			operator=(const EventManager &);
+			EventManager & operator=(const EventManager &);
 
 
 	};
 
+	template<class T>
+	class ClassEventHandler : public EventHandler {
+
+		public:
+			typedef int (T::*HandlerFunc)(Event * ev);
+		public:
+			ClassEventHandler(T *ptr, HandlerFunc func) :
+										  m_ptr(ptr),
+										  m_func(func) {
+			}
+
+			virtual void handlerEvent(Event * event) {
+				if(m_ptr && m_func) {
+
+					(m_ptr->*m_func)(event);
+				}
+			}
+		private:
+			T * m_ptr;
+			HandlerFunc m_func;
+	};
+#endif
 #endif
 
