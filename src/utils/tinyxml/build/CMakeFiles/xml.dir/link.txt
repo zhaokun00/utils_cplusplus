@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -pthread    CMakeFiles/xml.dir/xml.cpp.o CMakeFiles/xml.dir/tinyxml2.cpp.o  -o xml  -L/home/zhaokun/utils/utils_cplusplus/src/utils/tinyxml/lib -rdynamic -lpthread -Wl,-rpath,/home/zhaokun/utils/utils_cplusplus/src/utils/tinyxml/lib 
