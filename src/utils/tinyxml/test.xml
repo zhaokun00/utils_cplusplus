@@ -1,11 +1,22 @@
 <?xml version="1.0"?>  
-<scene name="Depth">  
+<!-- 属性值都是字符串的形式 -->
+<scene name="Depth" age="100">
+
     <surface id="A001" type="Camera">  
         <eye>0 10 10</eye>  
         <front>0 0 -1</front>  
         <refUp>0 1 0</refUp>  
         <fov>90</fov>  
-    </surface>  
+    </surface>
+    
+	<person id="A002" type="zhaokun">  
+        <eye>0 10 10</eye>  
+        <front>0 0 -1</front>  
+        <refUp>0 1 0</refUp>  
+        <fov>90</fov>  
+    </person>
+    
+	<!-- 
     <surface id="A002" type="Sphere">  
         <center>0 10 -10</center>  
         <radius>10</radius>  
@@ -13,5 +24,7 @@
     <surface id="A003" type="Plane">  
         <direction>0 10 -10</direction>  
         <distance>10</distance>  
-    </surface>  
+    </surface>
+
+	-->
 </scene> 
