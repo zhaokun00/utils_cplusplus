@@ -180,6 +180,24 @@ void test7() {
 
 	WrapperXml::deleteUserByName("test.xml", "ycl");
 }
+
+class Human {
+
+	public:
+		Human() {}
+		//这样编写函数,可以在使用只初始化一个参数id,参数name默认为0,当然也可以初始化两个参数
+		Human(int id,int name = 0) {
+			std::cout << "id = " << id << std::endl;
+			std::cout << "name = " << name << std::endl;
+		}
+};
+
+void test8() {
+
+	Human h(1);
+
+	Human(1,2);
+} 
 int main() {
 
 //	test1();
@@ -188,7 +206,9 @@ int main() {
 //	test4();
 //	test5();
 //	test6();
-	test7();
+//	test7();
+
+	test8();
 	return 0;
 }
 
