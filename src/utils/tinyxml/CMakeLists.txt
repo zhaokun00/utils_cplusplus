@@ -22,7 +22,7 @@ aux_source_directory(. root)
 #添加变量root、src到变量SRC_LIST
 set(SRC_LIST ${root})
 
-add_executable(xml ${SRC_LIST})
+add_executable(main ${SRC_LIST})
 
 #添加依赖的库
-target_link_libraries(xml pthread)
+target_link_libraries(main pthread)
