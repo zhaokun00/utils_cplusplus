@@ -1,7 +1,7 @@
 #include "SqlCommon.h"
 #include "SHA1.h"
 #include <time.h>
-
+#include <iostream>
 namespace sql
 {
 time::time()
@@ -67,16 +67,29 @@ string time::format(const char* format)
 	tm* localTime;
 	char buffer[128];
 
-  if ((localTime = localtime(&_value)) == 0)
+	//对源码进行了修改
+#if 0
+  if ((localTime = localtime(&_value)) == 0) {
+	  if (strftime(buffer, 128, format, localTime) > 0)
+		  s = buffer;
+  }
+#endif
+
+	if ((localTime = localtime(&_value))) {
 		if (strftime(buffer, 128, format, localTime) > 0)
 			s = buffer;
-
+	}
+	
 	return s;
 }
 
 string time::asString()
 {
-	return format("%d-%m-%Y %H:%M, %a");
+	#if 0
+		return format("%d-%m-%Y %H:%M, %a");
+	#endif
+	
+	return format("%Y-%m-%d %H:%M");
 }
 
 string time::asTimeString()

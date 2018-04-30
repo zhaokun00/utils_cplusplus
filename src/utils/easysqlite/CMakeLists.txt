@@ -25,7 +25,7 @@ aux_source_directory(./easySQLite easySQLite)
 #添加变量root、src到变量SRC_LIST
 set(SRC_LIST ${root} ${easySQLite})
 
-add_executable(json ${SRC_LIST})
+add_executable(main ${SRC_LIST})
 
 #添加依赖的库
-target_link_libraries(json pthread dl)
+target_link_libraries(main pthread dl)
