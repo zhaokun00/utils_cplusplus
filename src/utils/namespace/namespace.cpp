@@ -4,6 +4,9 @@
 
 #include "Hello.h"
 
+using namespace audioService;
+
+//using namespace audioService::mediaPlayer;
 /*
 	尽量不要使用using namesoace std
 	C++标准程序库中的所有标识符都被定义于一个名为std的namespace中,namespace是指标识符的各种可见范围,命名空间用关键字namespace来定义,
@@ -46,12 +49,21 @@ void test3() {
 	cout();
 }
 
+void test4() {
+
+	mediaPlayer::MediaPlayer player;
+
+	player.play();
+}
+
 int main() {
 
 //	test1();
 //	test2();
 
-	test3();
+//	test3();
+
+	test4();
 	return 0;
 }
 

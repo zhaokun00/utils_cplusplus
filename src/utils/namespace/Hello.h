@@ -28,4 +28,16 @@ namespace HelloService {
 
 }
 
+namespace audioService {
+
+	namespace mediaPlayer {
+
+		class MediaPlayer {
+			public:
+				MediaPlayer();
+				~MediaPlayer();
+				void play();
+		};
+	}
+}
 #endif

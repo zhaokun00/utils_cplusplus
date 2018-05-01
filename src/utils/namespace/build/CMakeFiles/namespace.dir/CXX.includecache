@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/namespace/Hello.cpp
+Hello.h
+/home/zhaokun/utils/utils_cplusplus/src/utils/namespace/Hello.h
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/namespace/Hello.h
+iostream
+-
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/namespace/namespace.cpp
+stdio.h
+-
+iostream
+-
+chrono
+-
+Hello.h
+/home/zhaokun/utils/utils_cplusplus/src/utils/namespace/Hello.h
+
