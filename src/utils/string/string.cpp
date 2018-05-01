@@ -3,6 +3,7 @@
 #include <thread>
 #include <string>
 #include <chrono>
+#include<sstream>
 
 //https://blog.csdn.net/tengfei461807914/article/details/52203202
 
@@ -176,14 +177,85 @@ void test4() {
 	std::cout << "s1 = " << s1 << std::endl;
 }
 
+//数值类型转换为字符串
+/*				
+std::string to_string( int value );
+(1)	(since C++11)		
+std::string to_string( long value );
+(2)	(since C++11)		
+std::string to_string( long long value );
+(3)	(since C++11)		
+std::string to_string( unsigned value );
+(4)	(since C++11)		
+std::string to_string( unsigned long value );
+(5)	(since C++11)		
+std::string to_string( unsigned long long value );
+(6)	(since C++11)		
+std::string to_string( float value );
+(7)	(since C++11)		
+std::string to_string( double value );
+(8)	(since C++11)		
+std::string to_string( long double value );
+(9)	(since C++11)
+*/
+void test5() {
+
+	int a1 = 123;
+	float f1 = 128.789;
+
+	std::string s1 = std::to_string(a1); //将整型转换为字符串型
+
+	std::string s2 = std::to_string(f1); //将float转换为字符串型,存在着精度问题
+
+	std::cout << "s1 = " << s1 << std::endl;
+	std::cout << "s2 = " << s2 << std::endl;
+
+	std::cout << "f1 = " << f1 << std::endl;
+
+//采用这种方式不会造成精度问题
+	std::ostringstream os; //构造一个输出字符串流,流的内容为空
+
+	os << f1; //向输出字符串流中输入数据
+
+	std::cout << "os = " << os.str() << std::endl; //转换为字符串类型
+}
+
+//字符串转换为数值类型
+/*
+stoi
+stol
+stoll 
+stoul
+stoull  
+stof
+stod
+stold
+*/
+void test6() {
+
+	std::string s1 = "1";
+	std::string s2 = "123.23";
+	std::string s3 = "ff";
+	
+	int a1 = std::stoi(s1);
+
+	float f1 = std::stof(s2);
+
+	int a2 = std::stoi(s3,nullptr,16); //以十六进制形式进行转换
+	
+	std::cout << "a1 = " << a1 << std::endl;
+	std::cout << "f1 = " << f1 << std::endl;
+	std::cout << "a2 = " << a2 << std::endl;
+}
+
 int main() {
 
 //	test1();
 //	test2();
 //	test3();
-	test4();
+//	test4();
 //	test5();
-//	test6();
+	test6();
 //	test7();
 //	test8();
 //	test9();
