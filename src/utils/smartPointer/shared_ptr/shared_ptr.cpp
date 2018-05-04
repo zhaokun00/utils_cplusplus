@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <memory>
 #include   <iostream>
-
+#include <map>
 using namespace std;
 
 /*
@@ -279,8 +279,12 @@ void test10() {
 class Animal {
 
 	public:
-		Animal() {}
-		virtual ~Animal() {}
+		Animal() {
+			std::cout << "Animal 构造函数" << std::endl;
+		}
+		virtual ~Animal() {
+			std::cout << "Animal 析构函数" << std::endl;
+		}
 		virtual void play() {
 			std::cout << "Animal play" << std::endl;
 		}
@@ -290,10 +294,12 @@ class Dog:public Animal {
 
 	public:
 		Dog() {}
+		Dog(int id):m_id(id){}
 		virtual ~Dog() {}
 		virtual void play() {
 			std::cout << "Dog play" << std::endl;
 		}
+		int m_id;
 };
 
 void test11() {
@@ -307,13 +313,51 @@ void test11() {
 	dog->play();
 #endif
 
-	shared_ptr<Animal> al(new Dog());
+	shared_ptr<Animal> al(new Dog(100));
 
 //	shared_ptr<Dog> dog = (shared_ptr<Dog>)al; //不能这样转换
 	
 	al->play();
+
+	std::cout << ((Dog *)al.get())->m_id << std::endl; //可以这样获取到原始指针,然后获取参数
+//	std::cout << al->m_id << std::endl;
+
 //	dog->play();
 	
+}
+
+//测试智能指针不赋值时是否为空
+void test12() {
+
+	shared_ptr<Animal> al; //没有初始化时,智能指针为空
+
+	if(NULL == al) {
+		std::cout << "智能指针为空" << std::endl;
+	}
+	else {
+		std::cout << "智能指针不为空" << std::endl;
+	}
+
+	shared_ptr<Animal> a(new Animal()); //初始化时,智能指针不为空
+	if(NULL == a) {
+		std::cout << "智能指针为空" << std::endl;
+	}
+	else {
+		std::cout << "智能指针不为空" << std::endl;
+	}
+}
+
+void test13() {
+
+	map<int,shared_ptr<Animal>> m1;
+
+	shared_ptr<Animal> p1(new Animal());
+
+	std::cout << "第一次cout = " << p1.use_count() << std::endl;
+	
+	m1.insert(make_pair(1,p1));
+
+	std::cout << "第二次cout = " << p1.use_count() << std::endl;
 }
 int main() {
 
@@ -327,7 +371,10 @@ int main() {
 //	test8();
 //	test9();
 //	test10();
-	test11();
+//	test11();
+//	test12();
+	test13();
+
 	return 0;
 }
 

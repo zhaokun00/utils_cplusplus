@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/main.dir/shared_ptr.cpp.o  -o main  -L/home/zhaokun/utils_cplusplus/src/utils/smartPointer/shared_ptr/lib -rdynamic -lpthread -Wl,-rpath,/home/zhaokun/utils_cplusplus/src/utils/smartPointer/shared_ptr/lib 

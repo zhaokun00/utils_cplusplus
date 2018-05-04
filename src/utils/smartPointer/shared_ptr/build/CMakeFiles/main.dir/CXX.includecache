@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhaokun/utils_cplusplus/src/utils/smartPointer/shared_ptr/shared_ptr.cpp
+stdio.h
+-
+memory
+-
+iostream
+-
+map
+-
+
