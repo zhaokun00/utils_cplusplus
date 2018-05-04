@@ -169,6 +169,100 @@ void test7() {
 	std::cout << std::thread::hardware_concurrency() << std::endl;;
 }
 
+//测试线程的分类
+
+void test8_1() {
+
+	std::chrono::milliseconds dura(1000);
+	
+
+	while(1) {
+	//	std::cout << "test8_1" << std::endl;
+		printf("test8_1\n");
+		std::this_thread::sleep_for(dura);
+
+	}
+	
+}
+
+void test8() {
+
+	std::chrono::milliseconds dura(1000);
+	std::thread t(test8_1);
+
+	std::cout << "test8" << std::endl;
+
+//	t.detach(); //设置线程分类了
+//	t.join(); //如果没有等待线程结束,并且线程没有分类,执行时将会报错
+
+	while(1) {
+
+		std::cout << "test8" << std::endl;
+		std::this_thread::sleep_for(dura);
+	}
+
+}
+
+//线程传入的函数指针,有两种方式
+void test9_1() {
+
+	std::cout << "test9_1" << std::endl;
+}
+
+void test9() {
+
+//	std::thread t(&test9_1); //可以这样设置
+
+	std::thread t(test9_1); //也可以这样设置
+
+	t.join();
+}
+
+//使用成员函数作为线程的执行函数
+class Student {
+
+	public:
+		void play(int id) {
+			std::cout << "student play:" << id << std::endl;
+		}
+};
+		
+void test10() {
+
+	Student s;
+
+	std::thread t(&Student::play,s,100);
+
+	t.join();
+}
+
+//使用成员函数作为线程的执行函数
+class Teacher {
+
+	public:
+		Teacher() {
+
+			t = std::thread(&Teacher::play,this,100);
+		}
+		void play(int id) {
+			std::cout << "Teacher play:" << id << std::endl;
+		}
+
+	private:
+		std::thread t;
+};
+		
+void test11() {
+
+	Teacher t;
+	std::chrono::milliseconds dura(1000);
+
+	while(1) {
+
+		std::this_thread::sleep_for(dura);
+	}
+}
+
 int main() {
 
 //	test1();
@@ -177,10 +271,12 @@ int main() {
 //	test4();
 //	test5();
 //	test6();
-	test7();
+//	test7();
 //	test8();
 //	test9();
 //	test10();
+	test11();
+
 	return 0;
 }
 
