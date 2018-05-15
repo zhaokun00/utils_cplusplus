@@ -1,0 +1,41 @@
+
+/************************************************************************
+* @description: 设备控制接口
+* @author:      zhaokun
+* @date:        2018.05.03
+* @ copyright   ziroom
+*************************************************************************/
+
+#ifndef DEVICE_IDEVICECONTROLLER_H_
+#define DEVICE_IDEVICECONTROLLER_H_
+
+#include "common.h"
+#include "IEvent.h"
+
+namespace iot {
+
+    namespace device {
+
+        using namespace iot::event;
+
+        class Device;
+
+        class IDeviceController {
+        public:
+
+            virtual ~IDeviceController() {};
+
+            virtual int init(std::map<std::string,std::string> m) = 0;
+            virtual int deInit() = 0;
+
+            virtual int getStatus() = 0;
+
+            virtual void control(std::shared_ptr<EventBaseMsg> msg,std::shared_ptr<Device> device) = 0;
+
+        };
+    }
+}
+
+#endif
+
+
