@@ -49,6 +49,8 @@ class Human {
 			cout<<"调用了析构函数"<<endl;
 		}
 		int id;
+
+		std::shared_ptr<Human> h;
 };
 
 //shared_ptr智能指针的初始化
@@ -359,6 +361,23 @@ void test13() {
 
 	std::cout << "第二次cout = " << p1.use_count() << std::endl;
 }
+
+void test14() {
+
+	std::shared_ptr<Human> h1(new Human());
+
+	{
+		std::shared_ptr<Human> h2(new Human());
+		h1->h = h2;
+		h1->h = h2;
+
+	std::cout << "inter u2 = " << h1->h.use_count() << std::endl;
+	}
+
+	std::cout << "u1 = " << h1.use_count() << std::endl;
+	std::cout << "u2 = " << h1->h.use_count() << std::endl;
+
+}
 int main() {
 
 //	test1();
@@ -373,8 +392,8 @@ int main() {
 //	test10();
 //	test11();
 //	test12();
-	test13();
-
+//	test13();
+	test14();
 	return 0;
 }
 
