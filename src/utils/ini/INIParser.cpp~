@@ -1,0 +1,131 @@
+#include "INIParser.h"
+
+string & INIParser::TrimString(std::string &str)
+{
+    std::string::size_type pos = 0;
+    while(str.npos != (pos = str.find(" ")))
+        str = str.replace(pos, pos+1, "");
+
+    return str;
+}
+
+int INIParser::ReadINI(std::string path)
+{	
+    std::ifstream in_conf_file(path.c_str());
+
+    if(false == in_conf_file.is_open()) {
+	std::cout << "打开" << path << "失败" << std::endl;
+	return -1;
+    }
+    std::string str_line = "";
+    std::string str_root = "";
+    std::vector<ININode> vec_ini;
+
+    while(getline(in_conf_file, str_line))
+    {
+        std::string::size_type left_pos = 0;
+        std::string::size_type right_pos = 0;
+        std::string::size_type equal_div_pos = 0;
+        std::string str_key = ""; //字符串赋值为""即string s = ""或者直接定义string s;二者效果一样,字符串为空,即成员函数empty()返回为真
+        std::string str_value = "";
+
+	//查找root元素,find函数用于查找在一个字符串中是否存在输入的字符,如果找不到则将返回npos变量
+        if((str_line.npos != (left_pos = str_line.find("["))) && (str_line.npos != (right_pos = str_line.find("]"))))
+        {
+//            cout << str_line.substr(left_pos+1, right_pos-1) << endl;
+            str_root = str_line.substr(left_pos+1, right_pos-1);
+        }
+	
+	//查找子节点	
+        if(str_line.npos != (equal_div_pos = str_line.find("=")))
+        {
+           str_key = str_line.substr(0, equal_div_pos);
+           str_value = str_line.substr(equal_div_pos+1, str_line.size()-1);
+           str_key = TrimString(str_key);
+           str_value = TrimString(str_value);
+//           cout << str_key << "=" << str_value << endl;
+        }
+
+	//将查找到子节点放入容器中
+        if((!str_root.empty()) && (!str_key.empty()) && (!str_value.empty()))
+        {
+           ININode ini_node(str_root, str_key, str_value);
+           vec_ini.push_back(ini_node);
+//           cout << vec_ini.size() << endl;
+        }
+    }
+
+    in_conf_file.close();
+    in_conf_file.clear();
+
+    std::map<std::string, std::string> map_tmp;
+
+    //先存入root当作key值
+    for(std::vector<ININode>::iterator itr = vec_ini.begin(); itr != vec_ini.end(); ++itr)
+    {
+        map_tmp.insert(pair<std::string, std::string>(itr->root, ""));
+    }
+
+    SubNode sn;
+
+    //第一层为有多少个root节点
+    for(std::map<std::string, std::string>::iterator itr = map_tmp.begin(); itr != map_tmp.end(); ++itr)
+    {
+       for(std::vector<ININode>::iterator sub_itr = vec_ini.begin(); sub_itr != vec_ini.end(); ++sub_itr) //挨个取出各个节点
+       {
+           if(sub_itr->root == itr->first)
+           {
+               //cout << sub_itr->key << "=" << sub_itr->value << endl;
+               sn.InsertElement(sub_itr->key, sub_itr->value); //存放各个节点
+           }
+       }
+       map_ini.insert(pair<std::string, SubNode>(itr->first, sn)); //插入节点
+    }
+    return 0;
+}
+
+std::string INIParser::GetValue(std::string root, std::string key)
+{
+    std::map<std::string, SubNode>::iterator itr = map_ini.find(root); //先查找root节点
+
+    std::map<std::string, std::string>::iterator sub_itr = itr->second.sub_node.find(key); //再查找子节点
+
+    if(!(sub_itr->second).empty())
+        return sub_itr->second;
+    return "";
+}
+
+int INIParser::WriteINI(std::string path)
+{
+    std::ofstream out_conf_file(path.c_str());
+
+    if(!out_conf_file)
+        return -1;
+		
+    for(std::map<std::string, SubNode>::iterator itr = map_ini.begin(); itr != map_ini.end(); ++itr)
+    {
+       out_conf_file << "[" << itr->first << "]" << endl;
+       for(std::map<std::string, std::string>::iterator sub_itr = itr->second.sub_node.begin(); sub_itr != itr->second.sub_node.end(); ++sub_itr)
+       {
+			out_conf_file << sub_itr->first << "=" << sub_itr->second << endl;
+       }
+    }
+    out_conf_file.close();
+    out_conf_file.clear();
+
+    return 0;
+}
+
+void INIParser::SetValue(std::string root, std::string key, std::string value)
+{
+    std::map<std::string, SubNode>::iterator itr = map_ini.find(root); //查找root节点
+
+    if(map_ini.end() != itr) //没有找到节点,则直接插入节点
+        itr->second.sub_node.insert(pair<std::string, std::string>(key, value));
+    else
+    {
+        SubNode sn;
+        sn.InsertElement(key, value);
+        map_ini.insert(pair<std::string, SubNode>(root, sn));
+    }
+}
