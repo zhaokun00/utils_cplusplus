@@ -63,7 +63,7 @@ TARGET = main
 BIN_TARGET = ${DIR_BIN}/${TARGET}
 
 #定义编译器
-CC = g++
+CC = g++ -std="c++11"
 
 #定义一个编译选项
 #这里只配置头文件的路径,不用配置库文件的路径
