@@ -1,0 +1,4 @@
+/home/zhaokun/clion/clion-2018.1.2/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/zhaokun/utils/utils_cplusplus/src/utils/lua/10
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/zhaokun/utils/utils_cplusplus/src/utils/lua/10/cmake-build-debug

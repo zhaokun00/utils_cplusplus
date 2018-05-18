@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
+/*
+栈中的元素可以通过索引访问,从栈底向上从1开始递增的正整数,从栈顶向下是从-1开始递减的负整数
+*/
+
+/*
+c调用lua的过程:
+1.创建lua环境
+2.将lua的标准库加载到lua环境中
+3.加载lua文件，编译lua文件,压入栈中
+4.解释执行lua编译的lua文件
+
+*/
+int main() {
+
+  /*
+	原型:lua_State *(luaL_newstate) (void);	
+	作用:luaL_newstate创建一个新的lua_State,c和lua的所有操作都要依赖这个lua环境,即创建一个lua环境
+  */
+  lua_State *L = luaL_newstate();
+
+  /*
+	原型:void (luaL_openlibs) (lua_State *L);
+	作用:将lua的标准库加载到luaL_newstate创建的环境中
+  */
+  luaL_openlibs(L);
+
+  /*
+	原型:#define luaL_dofile(L, fn) \
+	(luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
+	作用:luaL_loadfile从文件中加载lua代码并编译,编译成功后的程序块被压入栈中
+  */
+
+  /*
+	lua_pcall会将程序块弹出并在保护模式下解释执行
+  */
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return -1;
+  }
+
+  /*
+	原型:void lua_getglobal (lua_State *L, const char *name);
+   	作用:lua_getglobal将全局变量的值压入栈中,width先取出在-2位置,length后取在-1位置
+	把全局变量 name 里的值压入堆栈。 这个是用一个宏定义出来的
+ */
+
+  //先获取的先压入栈中,压入的方式是按照栈的结构存放的  
+  lua_getglobal(L,"width");
+  lua_getglobal(L,"height");
+
+  printf("width = %d\n", (int)lua_tointeger(L,-2)); //获取变量
+  printf("height = %d\n", (int)lua_tointeger(L,-1));
+
+  /*
+	关闭lua环境
+  */
+  lua_close(L);
+  return 0;
+}

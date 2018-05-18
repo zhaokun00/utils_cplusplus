@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 -pthread -O3 -DNDEBUG  -rdynamic CMakeFiles/zgateway.dir/main.cpp.o  -o zgateway  -L/home/zhaokun/utils/utils_cplusplus/src/utils/lua/10/lib/X86_64 -Wl,-rpath,/home/zhaokun/utils/utils_cplusplus/src/utils/lua/10/lib/X86_64 -lpthread -llua -lm -lrt -ldl -lcurl -lcrypto -lssl 

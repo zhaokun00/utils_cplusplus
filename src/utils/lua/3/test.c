@@ -1,0 +1,203 @@
+#include <stdio.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
+void test1() {
+
+  lua_State *L = luaL_newstate();
+
+  luaL_openlibs(L);
+
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return;
+  }
+
+  //获取全局函数add,该函数已经在lua文件中定义了
+  lua_getglobal(L,"add");
+
+  /*
+	原型:void lua_pushnumber (lua_State *L, lua_Number n);
+	作用:把数字n压入栈中
+  */
+  lua_pushnumber(L,10);
+  lua_pushnumber(L,20);
+
+  /*
+	原型:lua_pcall (lua_State *L, int nargs, int nresults, int errfunc);
+	作用:以保护模式调用一个函数
+
+  	nargs:传入参数的个数
+        nresults:函数返回参数的个数
+
+	例如:add函数传入的参数个数为2个,返回的参数个数为1个
+  */
+
+  /*
+	相当于调用了add函数,同时会将结果压入栈中.注意在压入结果前会弹出函数个参数,所以结果的索引值为-1
+  */
+  if(lua_pcall(L,2,1,0) != 0) { 
+    printf("error %s\n", lua_tostring(L,-1));
+  }
+
+  /*
+	原型:lua_Number lua_tonumber (lua_State *L, int index);
+        作用:把给定索引处的lua值转换为lua_number这样一个C类型,默认为double类型
+  */
+  double result = lua_tonumber(L,-1);
+
+  printf("result = %lf\n",result);
+
+  //以下输出结果为0,原因在与lua_pcall在输出结果前将函数和参数弹出,所以栈中已经不存在数据
+  double a = lua_tonumber(L,-2); //输出为0
+  double b = lua_tonumber(L,-3); //输出为0
+
+  printf("a = %lf\n",a);
+  printf("a = %lf\n",b);
+
+  lua_close(L);
+}
+
+void test2() {
+
+  lua_State *L = luaL_newstate();
+
+  luaL_openlibs(L);
+
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return;
+  }
+
+  lua_getglobal(L,"add");
+
+  lua_pushnumber(L,10);
+  lua_pushnumber(L,20);
+
+  if(lua_pcall(L,2,1,0) != 0) {
+    printf("error %s\n", lua_tostring(L,-1));
+  }
+
+  double result1 = lua_tonumber(L,-1);
+
+  printf("result1 = %lf\n",result1);
+
+  /*
+	原型:void lua_pop (lua_State *L, int n);
+	作用:从堆栈中弹出 n 个元素
+ */
+  lua_pop(L, 1);
+
+  //以下打印结果为0,因为已经从堆中把数据弹出
+  double result2 = lua_tonumber(L,-1);
+
+  printf("result2 = %lf\n",result2);
+
+  lua_close(L);
+}
+
+void test3() {
+
+  lua_State *L = luaL_newstate();
+
+  luaL_openlibs(L);
+
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return;
+  }
+
+  //向栈中压入数据
+  lua_pushnumber(L,10);
+  lua_pushnumber(L,20);
+
+  //从栈中获取数据
+  double a = lua_tonumber(L,-1); //输出为0
+  double b = lua_tonumber(L,-2); //输出为0
+
+  printf("a = %lf\n",a);
+  printf("a = %lf\n",b);
+
+  lua_close(L);
+}
+
+/*
+与test2不同之处在于先往栈中压入元素,然后在获取函数
+这种形式在执行时会报错,不能执行
+*/
+void test4() {
+
+  lua_State *L = luaL_newstate();
+
+  luaL_openlibs(L);
+
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return;
+  }
+
+  //1.先压入元素
+  lua_pushnumber(L,10);
+  lua_pushnumber(L,20);
+
+  //2.再获取函数
+  lua_getglobal(L,"add");
+
+  if(lua_pcall(L,2,1,0) != 0) {
+    printf("error %s\n", lua_tostring(L,-1));
+  }
+
+  double result1 = lua_tonumber(L,-1);
+
+  printf("result1 = %lf\n",result1);
+
+  lua_pop(L, 1);
+
+  lua_close(L);
+}
+
+/*
+与test2的不同之处在于压入栈中的元素个数不同
+注意:压入栈中的元素个数要与lua_pcall元素设置的个数相同
+*/
+void test5() {
+
+  lua_State *L = luaL_newstate();
+
+  luaL_openlibs(L);
+
+  if(luaL_loadfile(L, "test.lua") || lua_pcall(L, 0,0,0)) {
+    printf("error %s\n", lua_tostring(L,-1));
+    return;
+  }
+
+  //1.先获取函数
+  lua_getglobal(L,"add");
+
+  //1.先压入元素
+  lua_pushnumber(L,10);
+  lua_pushnumber(L,20);
+  lua_pushnumber(L,1);
+
+  if(lua_pcall(L,2,1,0) != 0) {
+    printf("error %s\n", lua_tostring(L,-1));
+  }
+
+  double result1 = lua_tonumber(L,-1);
+
+  printf("result1 = %lf\n",result1);
+
+  lua_pop(L, 1);
+
+  lua_close(L);
+}
+int main() {
+
+  //test1();
+  //test2();
+  //test3();
+  //test4();
+  test5();
+  return 0;
+}

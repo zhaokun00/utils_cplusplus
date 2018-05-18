@@ -1,0 +1,78 @@
+
+#ifndef ZJS_SCRIPTENGINE_H
+#define ZJS_SCRIPTENGINE_H
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <fstream>
+#include <sstream>
+#include <lua.hpp>
+
+#include "LuaBridge.h"
+
+namespace iot {
+    namespace lua {
+
+	class ScriptBuffer {
+
+	public:
+	    ScriptBuffer() {}
+      	    ~ScriptBuffer() {}
+		
+           void play(int data) {
+		std::cout << "data = " << data << std::endl;
+	   }	
+	};
+        class ScriptEngine {
+        private:
+            lua_State *L;
+        public:
+
+            /*
+             * 注册ScriptBuffer class for lua to use
+             */
+            void registerClass() {
+                using namespace luabridge;
+
+                getGlobalNamespace(L)
+
+                        .beginNamespace("zm")
+			
+			.beginClass<ScriptBuffer>("ScriptBuffer")
+
+			.addFunction("play", &ScriptBuffer::play)
+			.endClass()
+
+
+                        .endNamespace();
+            }
+
+            ScriptEngine() {
+                L = luaL_newstate();
+                luaL_openlibs(L);
+                registerClass();
+            }
+
+            ~ScriptEngine() {
+                if (L != NULL) {
+                    lua_close(L);
+                }
+            }
+
+            void encode(std::string script, Message *pSource, ScriptBuffer *pTarget) {
+                int error = luaL_loadbuffer(L, script.c_str(), script.length(), "endecode") || lua_pcall(L, 0, 0, 0);
+                if (error) {
+                    fprintf(stderr, "%s", lua_tostring(L, -1));    // 从栈顶取出错误信息打印。
+                }
+                luabridge::LuaRef encoder = luabridge::getGlobal(L, "ziroom_encode");
+                encoder(pSource, pTarget);
+
+            }
+
+        };
+    }
+}
+
+
+#endif //ZJS_SCRIPTENGINE_H
