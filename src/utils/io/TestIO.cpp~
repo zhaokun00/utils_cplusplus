@@ -189,12 +189,59 @@ void test5() {
 	r.close();
 }
 
+void test6() {
+
+	bool ret = isFileExist("/home/zhaokun/utils/utils_cplusplus/src/utils/io/IO.cpp");
+
+	if(true == ret) {
+		printf("文件存在\n");
+	}
+	else {
+		printf("文件不存在\n");
+	}
+
+	ret = isFileExist("/home/zhaokun/utils/utils_cplusplus/src/utils/io/IO1.cpp");
+
+	if(true == ret) {
+		printf("文件存在\n");
+	}
+	else {
+		printf("文件不存在\n");
+	}	
+
+}
+
+void test7() {
+
+	bool ret = isDirExist("/home/zhaokun/utils/utils_cplusplus/src/utils/io");
+
+	if(true == ret) {
+		printf("目录存在\n");
+	}
+	else {
+		printf("目录不存在\n");
+	}
+
+	ret = isDirExist("/home/zhaokun/utils/utils_cplusplus/src/utils/io");
+
+	if(true == ret) {
+		printf("目录存在\n");
+	}
+	else {
+		printf("目录不存在\n");
+	}
+
+}
+
 int main() {
 
 //	test2();
 //	test3();
 //	test4();
-	test5();
+//	test5();
+
+//	test6();
+	test7();
 	return 0;
 }
 

@@ -24,7 +24,7 @@
 
 	bool isFileExist(const char * filePath);
 
-	bool isDirExist(const char * dirPath);
+	bool isDirExist(const char * filePath);
 
 #endif
 

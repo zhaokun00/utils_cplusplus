@@ -78,10 +78,6 @@ bool isDirExist(const char * dirPath) {
 		return false;
 	}
 
-	if(NULL == opendir(dirPath)) {
-		return false;
-	}
 
-	return true;
 }
 
