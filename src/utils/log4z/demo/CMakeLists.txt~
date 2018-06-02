@@ -1,0 +1,53 @@
+cmake_minimum_required(VERSION 2.8.7)
+
+project(TestExample)
+
+#必须配置:告知当前使用的是交叉编译方式
+#SET(CMAKE_SYSTEM_NAME Linux)
+
+#必须配置:指定C交叉编译器或者交叉编译器的绝对地址
+#SET(CMAKE_C_COMPILER "arm-linux-gnueabi-gcc")
+
+#必须配置:指定C++交叉编译器
+#SET(CMAKE_CXX_COMPILER "arm-linux-gnueabi-g++")
+
+#使用C++11标准
+add_compile_options(-std=c++11)
+#不一定需要设置
+#指定交叉编译环境安装目录...
+#SET(CMAKE_FIND_ROOT_PATH "...")
+#从来不在指定目录下查找工具程序
+#SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+#只在指定目录下查找库文件
+#SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+#只在指定目录下查找头文件
+#SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+#指定头文件目录
+include_directories(
+  ${CMAKE_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/base
+  ${CMAKE_SOURCE_DIR}/glog
+)
+
+#指定库文件目录
+link_directories(
+  ${CMAKE_SOURCE_DIR}/lib
+)
+
+add_definitions(-DHAVE_CONFIG_H)
+add_definitions(-DNO_FRAME_POINTER)
+add_definitions(-DNDEBUG)
+#添加源文件
+#添加当前目录下的所有源文件到变量root中
+aux_source_directory(. root)
+#添加当前目录下的src目录下的源文件到变量src中
+#aux_source_directory(./src src)
+
+#添加变量root、src到变量SRC_LIST,变量使用{}括起来,而不能使用()括起来
+set(SRC_LIST ${root} ${src})
+
+add_executable(TestExample ${SRC_LIST})
+
+#添加依赖的库
+target_link_libraries(TestExample pthread gflags)
