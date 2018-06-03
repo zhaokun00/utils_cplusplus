@@ -248,6 +248,59 @@ void test6() {
 	std::cout << "a2 = " << a2 << std::endl;
 }
 
+//备注:在有的编译器中test5和test6方式不能使用
+
+//以下test7、test8为通用形式的字符串与其他类型进行相互转换的形式
+
+//将string类型转换为其他类型
+void test7() {
+
+	std::istringstream in1;
+	std::istringstream in2;
+	
+	std::string str1 = "123.456";
+	std::string str2 = "789";
+
+	in1.str(str1);
+	in2.str(str2);
+
+	//以上3句话可以写成std::istringstream in("123.456");
+
+	int ia = 0;
+	float fb = 0;
+
+	in1 >> fb;
+	in2 >> ia;
+
+	std::cout << "ia = " << ia << std::endl; 
+	std::cout << "fa = " << fb << std::endl; 
+
+}
+
+//将其他类型数据转化为string类型
+void test8() {
+
+	int a = 123;
+
+	std::ostringstream oss;
+
+	oss << a;
+
+	std::cout << oss.str() << std::endl;
+
+	//每次使用前晴空oss,clear()函数并不能情况内存
+//	oss.clear();
+	oss.str("");
+
+	double f = 45.67;
+
+	oss << f;
+
+	std::cout << oss.str() << std::endl;
+
+	
+}
+
 int main() {
 
 //	test1();
@@ -255,9 +308,9 @@ int main() {
 //	test3();
 //	test4();
 //	test5();
-	test6();
+//	test6();
 //	test7();
-//	test8();
+	test8();
 //	test9();
 //	test10();
 	return 0;
