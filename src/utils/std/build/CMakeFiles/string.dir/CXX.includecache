@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/std/std.cpp
+stdio.h
+-
+unistd.h
+-
+iostream
+-
+thread
+-
+string
+-
+chrono
+-
+sstream
+-
+

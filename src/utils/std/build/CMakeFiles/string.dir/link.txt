@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -pthread    CMakeFiles/string.dir/std.cpp.o  -o string  -L/home/zhaokun/utils/utils_cplusplus/src/utils/std/lib -rdynamic -lpthread -Wl,-rpath,/home/zhaokun/utils/utils_cplusplus/src/utils/std/lib 

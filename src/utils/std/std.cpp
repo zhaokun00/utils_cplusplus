@@ -182,6 +182,22 @@ void test7() {
 	f(200);
 }
 
+
+//直接调用的形式
+void echoFunc(std::string s){
+    std::cout << "test : " << s << std::endl;
+}
+
+void test8_1(std::function<void()> task) {
+
+	task();
+}
+
+void test8() {
+
+	test8_1(std::bind(echoFunc,"zhaokun"));	
+}
+
 int main() {
 
 //	test1();
@@ -190,8 +206,8 @@ int main() {
 //	test4();
 //	test5();
 //	test6();
-	test7();
-//	test8();
+//	test7();
+	test8();
 //	test9();
 //	test10();
 

@@ -172,7 +172,7 @@ void test6() {
 /*
 std::bind用来将可调用对象与其参数一起绑定,绑定后可以使用std::function进行保存,并延迟到我们需要的时候调用
 
-
+在绑定部分参数的时候,通过使用std::placeholders来决定空位参数将会是调用发生时的第一个参数
 */
 void test7() {
 
@@ -180,6 +180,20 @@ void test7() {
 
 	std::function<int(int)> f = std::bind(&Human::print,&h,std::placeholders::_1);
 	f(200);
+}
+
+void echoFunc(std::string s){
+    std::cout << "test : " << s << std::endl;
+}
+
+void test8_1(std::function<void()> task) {
+
+	task();
+}
+
+void test8() {
+
+	test8_1(std::bind(echoFunc,"zhaokun"));	
 }
 
 int main() {
@@ -190,8 +204,8 @@ int main() {
 //	test4();
 //	test5();
 //	test6();
-	test7();
-//	test8();
+//	test7();
+	test8();
 //	test9();
 //	test10();
 
