@@ -1,0 +1,203 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <iostream>
+#include <thread>
+#include <string>
+#include <chrono>
+#include<sstream>
+
+//测试std::move函数
+/*
+	std::move函数可以以非常简单的方式将左值引用转换为右值引用,通过std::move可以避免不必要的操作
+	std::move函数是为性能而生
+	std::move是将对象的状态或者所有权从一个对象转移到另一个对象,只是转移没有内存的搬迁或者内存的拷贝
+*/
+void test1() {
+
+	std::string str1 = "zhaokun";
+
+	//调用移动构造函数,会偷空str1,最好不要在使用str
+	std::string str2 = std::move(str1);
+
+	std::cout << "str1 = " << str1 << std::endl; //输出空
+
+	std::cout << "str2 = " << str2 << std::endl; //输出zhaokun
+}
+
+class Human {
+
+public:
+	Human() {}
+	~Human() {}
+
+	static int func(int n) {std::cout << n << std::endl;}
+	int m_id;
+	std::string m_name;
+
+	int print(int n) {std::cout << n << std::endl;}
+};
+
+void test2() {
+
+	Human h1;
+	Human h2;
+
+	h1.m_id = 100;
+	h1.m_name = "zhaokun";
+
+	h2 = std::move(h1);
+
+	std::cout << h1.m_id << std::endl; //输出100
+	std::cout << h2.m_id << std::endl; //输出100
+
+	std::cout << h1.m_name << std::endl;
+	std::cout << h2.m_name << std::endl;
+
+	h1.m_id = 200;
+	h1.m_name = "ycl";
+
+	std::cout << h1.m_id << std::endl; //输出200
+	std::cout << h2.m_id << std::endl; //输出100
+
+	std::cout << h1.m_name << std::endl;
+	std::cout << h2.m_name << std::endl;
+}
+
+void test3() {
+
+	int a = 100;
+
+	int b = std::move(a);
+
+	std::cout << "a = " << a << std::endl;
+	std::cout << "b = " << b << std::endl;
+
+	std::cout << "&a = " << &a << std::endl;
+	std::cout << "&b = " << &b << std::endl;
+}
+
+void test4() {
+
+	Human *h1 = new Human();
+	Human *h2;
+
+	std::cout << h1 << std::endl;
+
+	h1->m_id = 100;
+	h1->m_name = "zhaokun";
+
+	h2 = std::move(h1);
+
+	std::cout << h1 << std::endl;
+
+	std::cout << h1->m_id << std::endl; //输出100
+	std::cout << h2->m_id << std::endl; //输出100
+
+	std::cout << h1->m_name << std::endl;
+	std::cout << h2->m_name << std::endl;
+
+	h1->m_id = 200;
+	h1->m_name = "ycl";
+
+	std::cout << h1->m_id << std::endl; //输出100
+	std::cout << h2->m_id << std::endl; //输出100
+
+	std::cout << h1->m_name << std::endl;
+	std::cout << h2->m_name << std::endl;
+
+}
+
+//-----------------------------------------------------------------------------------
+//测试std::forward函数
+/*
+C++11里面有两个函数比较有意思,一个是std::move,另一个是std::forward
+move函数是用来实现右值引用的,而forward是用来转发参数的
+
+假设有这样一个模板转发函数:
+
+void DoSomething(){
+    DoItActually();
+}
+
+DoItActually(int & a){}//lvalue ver
+DoItActually(int&& a){}//rvalue ver
+
+能够自动识别参数，调用合适的DoItActually()函数，那要怎么实现呢？
+*/
+void RunCode(int && m) { std::cout << "rvalue ref" << std::endl; }
+void RunCode(int & m) { std::cout << "lvalue ref" << std::endl; }
+void RunCode(const int && m) { std::cout << "const rvalue ref" << std::endl; }
+void RunCode(const int & m) { std::cout << "const lvalue ref" << std::endl; }
+
+template <typename T>
+void PerfectForward(T &&t) {   RunCode(std::forward<T>(t));    }
+
+void test5() {
+
+    int a;
+    int b;
+    const int c = 1;
+    const int d = 0;
+
+    PerfectForward(a);          // lvalue ref
+    PerfectForward(std::move(b));    // rvalue ref
+    PerfectForward(c);          // const lvalue ref
+    PerfectForward(std::move(d));    // const rvalue ref
+}
+
+//-----------------------------------------------------------------------------------
+//测试std::function函数
+/*
+std::function是可调用对象的包装类,它最重要的功能是实现延迟调用,保存了函数指针
+*/
+void func() {
+
+	std::cout << "func" << std::endl;
+}
+
+void test6() {
+
+	//绑定普通函数
+	std::function<void()> f = func;
+	f();
+
+	//绑定静态成员函数
+	std::function<int(int)> f1 = Human::func;
+	f1(100);
+	
+}
+
+//-----------------------------------------------------------------------------------
+//测试std::function函数
+/*
+std::bind用来将可调用对象与其参数一起绑定,绑定后可以使用std::function进行保存,并延迟到我们需要的时候调用
+
+在绑定部分参数的时候,通过使用std::placeholders来决定空位参数将会是调用发生时的第一个参数
+*/
+void test7() {
+
+	Human h;
+
+	std::function<int(int)> f = std::bind(&Human::print,&h,std::placeholders::_1);
+	f(200);
+}
+
+int main() {
+
+//	test1();
+//	test2();
+//	test3();
+//	test4();
+//	test5();
+//	test6();
+	test7();
+//	test8();
+//	test9();
+//	test10();
+
+	while(1) {
+		sleep(1);
+	}
+	return 0;
+}
+
