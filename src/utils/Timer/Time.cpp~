@@ -1,0 +1,21 @@
+#include "Time.h"
+
+void echoFunc(std::string s){
+    std::cout << "test : " << s << endl;
+}
+
+void test1() {
+
+    Timer t;
+    //周期性执行定时任务
+    t.StartTimer(1000, std::bind(echoFunc,"hello world!"));
+
+}
+
+int main() {
+
+
+	while(1) {
+
+	}
+}
