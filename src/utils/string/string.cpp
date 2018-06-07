@@ -4,6 +4,7 @@
 #include <string>
 #include <chrono>
 #include<sstream>
+#include <algorithm>    // transform
 
 //https://blog.csdn.net/tengfei461807914/article/details/52203202
 
@@ -301,6 +302,25 @@ void test8() {
 	
 }
 
+void toUpperString(std::string &str) {
+    std::transform(str.begin(), str.end(), str.begin(), (int (*)(int))std::toupper);  
+}  
+void toLowerString(std::string &str) {
+    std::transform(str.begin(), str.end(), str.begin(), (int (*)(int))std::tolower);  
+} 
+
+void test9() {
+
+	std::string s1 = "12abcs::DF";
+
+	toUpperString(s1);
+
+	std::cout << s1 << std::endl;
+
+	toLowerString(s1);
+
+	std::cout << s1 << std::endl;
+}
 int main() {
 
 //	test1();
@@ -310,8 +330,8 @@ int main() {
 //	test5();
 //	test6();
 //	test7();
-	test8();
-//	test9();
+//	test8();
+	test9();
 //	test10();
 	return 0;
 }
