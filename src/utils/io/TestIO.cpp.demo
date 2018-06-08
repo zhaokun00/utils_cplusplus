@@ -131,6 +131,7 @@ void test4() {
 	std::getline(t,s);
 
 	std::cout << s << std::endl;
+ 
 #endif
 
 //读取文本全部数据
@@ -139,12 +140,14 @@ void test4() {
 	while(!t.eof()) { //判断是否读取数据到文件最后
 		std::cout << ++i << std::endl;
 		std::string s;
-		std::getline(t,s);
+		std::getline(t,s); //读取一行数据,读取的数据不包括最后的换行符\n
 		std::cout << s << std::endl;
 	}
 #endif
 
-
+	//写入换行符符有以下两种情况
+	//1. t << std::end;
+	//2. t << "\n";
 	t.close();
 }
 
