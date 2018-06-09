@@ -116,6 +116,19 @@ void test7() {
 	}
 }
 
+/*使用Lambda表达式作为参数*/
+void test8(){
+
+	Timer t1;
+	t1.syncWait(1000, []() {std::cout << "Lambda" << std::endl;});
+
+	std::cout << "syncWait" << std::endl;
+
+	while(1) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+}
+
 int main() {
 
 //	test1();
@@ -130,5 +143,7 @@ int main() {
 
 //	test6();
 
-	test7();	
+//	test7();
+
+	test8();	
 }
