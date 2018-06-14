@@ -244,6 +244,41 @@ void test6() {
 
 }
 
+void test7() {
+
+	std::map<std::pair<std::string,std::string>,int *> socket_map;
+
+	int a = 10;
+
+	auto ret = socket_map.insert(std::make_pair(std::make_pair("name","age"),&a));
+
+	if(true == ret.second) {
+		std::cout << "第一次插入成功" << std::endl;
+	}
+
+	auto it = socket_map.begin();
+
+	while(it != socket_map.end())
+	{
+		if(it->second == &a) {
+			std::cout << &a << std::endl;
+
+			socket_map.erase(it);
+		}
+		it++;
+	}
+
+	ret = socket_map.insert(std::make_pair(std::make_pair("name","age"),&a));
+
+	if(true == ret.second) {
+		std::cout << "第二次插入成功" << std::endl;
+	}
+	else {
+		std::cout << "第二次插入失败" << std::endl;
+	}
+
+}
+
 int main() {
 
 //	test1();
@@ -251,8 +286,9 @@ int main() {
 //	test3();
 //	test4();
 //	test5();
-	test6();
+//	test6();
 
+	test7();
 	return 0;
 }
 
