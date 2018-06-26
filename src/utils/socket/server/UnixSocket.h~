@@ -1,0 +1,44 @@
+/*
+ **************************************************************************************
+ * Filename   : UnixSocket.h
+ * Author 	  : zhaokun
+ * Description: UnixSocket.h 该文件解决的是socket进程间通信
+ * Date		  ：2018-01-30
+ * Others	  :
+ **************************************************************************************
+ */
+
+#ifndef _UNIXSOCKET_H_
+#define _UNIXSOCKET_H_
+
+	
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/un.h>
+#include <fcntl.h>
+#include <sys/select.h>
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#define BLOCK 	 0	//阻塞方式
+#define NO_BLOCK 1 	//非阻塞方式
+
+class UnixSocketServer {
+
+	public:
+		UnixSocketServer();
+		int openSocket(const char * pPathName,int listerNum);
+		int acceptSocket();
+		int writeSocket(int clientFd,void *buf, int len);
+		int readSocket(int clientFd,void *buf, int len);
+		int closeSocket();
+		int setSocketFdMethod(int clientFd,int method);
+
+	public:
+		int m_socketFd;
+};
+
+#endif
+

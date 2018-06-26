@@ -1,0 +1,55 @@
+#include "UnixSocket.h"
+#include <pthread.h>
+
+#define PATH "/home/zhaokun/utils/utils_cplusplus/src/utils/socket/test"
+
+class Message {
+
+	public:
+		int 	mId;
+		char 	mName[10];
+		float 	mScore;
+		long 	mCount;
+};
+
+void * clientThreadProcess(void *clientThreadProcess) {
+
+	UnixSocketClient client;
+
+	client.connectSocket(PATH);
+	
+	Message msg;
+	msg.mId = 1;
+	strncpy(msg.mName,"zhaokun",sizeof(msg.mName));
+	msg.mScore = 10.2;
+	msg.mCount = 100;
+	
+	while(1) {
+
+		client.writeSocket(&msg, sizeof(msg));
+
+		client.readSocket(&msg, sizeof(msg));
+
+		printf("id = %d,mName = %s,mScore = %f,mCount = %ld\n",msg.mId,msg.mName,msg.mScore,msg.mCount);
+		
+		sleep(1);
+	}
+
+	client.closeSocket();
+	
+	return NULL;
+}
+
+int main() {
+
+	int ret = 0;
+	pthread_t clinetThead;
+		
+	pthread_create(&clinetThead, NULL, clientThreadProcess, NULL);
+	
+
+	while(1) {
+		sleep(1);
+	}
+	return ret;
+}
