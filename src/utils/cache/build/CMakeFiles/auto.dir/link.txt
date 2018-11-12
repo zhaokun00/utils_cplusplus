@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -pthread    CMakeFiles/auto.dir/Cache.cpp.o  -o auto  -L/home/zhaokun/utils/utils_cplusplus/src/utils/cache/lib -rdynamic -lpthread -Wl,-rpath,/home/zhaokun/utils/utils_cplusplus/src/utils/cache/lib 

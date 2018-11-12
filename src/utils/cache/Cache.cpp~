@@ -1,0 +1,63 @@
+
+#include "Cache.h"
+#include <sstream>
+#include <fstream>
+ 
+std::string getLocalTimeToSec() {
+
+    time_t t;
+
+    t = time(NULL);
+
+    std::ostringstream oss;
+
+    oss << (long)t;
+
+    return oss.str();
+}
+
+int main() {
+
+	Cache<std::string,std::string> cache;
+
+	cache.set("name","zhaokun",2);
+
+	std::cout << "getTime:" << getLocalTimeToSec() << std::endl;
+
+	sleep(1);
+
+	cache.remove("name");
+
+	std::cout << "getTime:" << getLocalTimeToSec() << std::endl;
+
+	std::string value;
+	bool ret = cache.get("name",value);
+
+	if(ret == false) {
+		std::cout << "获取失败" << std::endl; 
+	}
+	else {
+		std::cout << "获取成功" << std::endl; 
+	}
+
+	std::cout << value << std::endl;
+	
+sleep(2);
+
+	ret = cache.get("name",value);
+
+	if(ret == false) {
+		std::cout << "获取失败" << std::endl; 
+	}
+	else {
+		std::cout << "获取成功" << std::endl; 
+	}
+
+    for(;;)
+    {
+        sleep(1);
+    }
+
+	return 0;
+}
+

@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/cache/Cache.cpp
+Cache.h
+/home/zhaokun/utils/utils_cplusplus/src/utils/cache/Cache.h
+sstream
+-
+fstream
+-
+
+/home/zhaokun/utils/utils_cplusplus/src/utils/cache/Cache.h
+stdlib.h
+-
+iostream
+-
+map
+-
+time.h
+-
+unistd.h
+-
+stdio.h
+-
+iostream
+-
+thread
+-
+mutex
+-
+condition_variable
+-
+chrono
+-
+
