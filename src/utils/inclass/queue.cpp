@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stddef.h>
+#include <iostream>
+
+class outclass
+{
+public:
+	int m;
+	class inclass//内部类通过parent指针访问外部类的成员，包括public、private
+	{
+	public:
+
+		inclass() {
+			i = 200;
+		}
+		int i;
+		void set_m(int i)
+		{
+			outclass *parent = (outclass *) ((char*)this - offsetof(outclass,in)); 
+			parent->m = i;
+		}
+	}in;
+};
+ 
+void test1() {
+
+	outclass out;
+	out.in.set_m(123);
+
+	printf("m = %d\n",out.m);
+	printf("i = %d\n",out.in.i);
+}
+
+int main() {
+
+	test1();
+
+	return 0;
+}
+
